@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 — Office Sweepstake</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00843D;
+    --green-dark: #005C2A;
+    --green-light: #E8F5EE;
+    --gold: #C8973A;
+    --gold-light: #FDF3E3;
+    --red: #CC2529;
+    --bg: #F4F1EB;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --muted: #6B6B6B;
+    --border: #DDD8CE;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--green-dark);
+    color: #fff;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .header-left {}
+  .trophy { font-size: 3rem; line-height: 1; margin-bottom: 0.5rem; }
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    letter-spacing: 0.04em;
+    color: #fff;
+    line-height: 1;
+  }
+  header h1 span { color: var(--gold); }
+  .subtitle {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+  }
+  .header-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-shrink: 0;
+  }
+  .hstat {
+    text-align: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 0.7rem 1.1rem;
+  }
+  .hstat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .hstat-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+  .stripe {
+    height: 6px;
+    background: repeating-linear-gradient(90deg, var(--gold) 0, var(--gold) 33%, var(--green) 33%, var(--green) 66%, var(--red) 66%, var(--red) 100%);
+  }
+
+  /* NAV */
+  nav {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+  }
+  nav button {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 1rem 1.3rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active {
+    color: var(--green-dark);
+    border-bottom-color: var(--green);
+  }
+
+  /* MAIN */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .section { display: none; }
+  .section.visible { display: block; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.05em;
+    color: var(--green-dark);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--green);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* PARTICIPANTS GRID */
+  .participants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .p-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    transition: box-shadow 0.15s, transform 0.15s;
+    cursor: default;
+  }
+  .p-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+  .p-flag { font-size: 1.8rem; margin-bottom: 0.4rem; }
+  .p-team {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+  }
+  .p-group {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #fff;
+    background: var(--green);
+    border-radius: 4px;
+    padding: 1px 6px;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
+  .p-owner {
+    font-size: 0.82rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .p-owner::before { content: '👤'; font-size: 0.75rem; }
+
+  /* FIXTURES */
+  .group-block { margin-bottom: 2.5rem; }
+  .group-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+    background: var(--green);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .group-teams-pill {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.02em;
+  }
+  .fixtures-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .fixture-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    transition: box-shadow 0.15s;
+  }
+  .fixture-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+  .fixture-team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+  .fixture-team.right {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+  .team-flag { font-size: 1.3rem; flex-shrink: 0; }
+  .team-info { min-width: 0; }
+  .team-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .team-owner-small {
+    font-size: 0.72rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fixture-vs {
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .vs-badge {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    line-height: 1;
+  }
+  .vs-date {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 3px;
+    text-align: center;
+  }
+
+  /* OWNER VIEW */
+  .owner-select-wrap {
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .owner-select-wrap label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+    min-width: 200px;
+  }
+  select:focus { border-color: var(--green); }
+
+  .owner-profile {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .owner-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--green-dark);
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .owner-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.04em; }
+  .owner-tag { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+
+  .owner-teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+  .owner-team-card {
+    background: var(--green-light);
+    border: 1px solid #b5dac7;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .owner-team-flag { font-size: 1.5rem; }
+  .owner-team-name { font-weight: 600; font-size: 0.88rem; }
+  .owner-team-group { font-size: 0.72rem; color: var(--green-dark); }
+
+  .owner-fixtures-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    color: var(--green-dark);
+    margin-bottom: 0.8rem;
+    margin-top: 0.5rem;
+  }
+  .highlighted-fixture {
+    background: var(--gold-light);
+    border-color: #e0c070 !important;
+  }
+  .highlighted-fixture .vs-badge {
+    background: var(--gold);
+    color: #fff;
+    border-color: var(--gold);
+  }
+  .both-teams-badge {
+    background: var(--gold);
+    color: #fff;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* STANDINGS placeholder */
+  .standings-note {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .standings-note .big { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  /* SEARCH BAR */
+  .search-bar {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text);
+    outline: none;
+    margin-bottom: 1.5rem;
+  }
+  .search-bar:focus { border-color: var(--green); }
+
+  /* TODAY */
+  .countdown-wrap {
+    background: var(--green-dark);
+    color: #fff;
+    border-radius: 14px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .countdown-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 1rem;
+  }
+  .countdown-units {
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .cunit {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 0.8rem 1.3rem;
+    min-width: 70px;
+  }
+  .cunit-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .cunit-label {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+  }
+  .countdown-msg {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
+    margin-top: 0.5rem;
+  }
+  .today-date-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.06em;
+    color: var(--green-dark);
+    margin-bottom: 1rem;
+  }
+  .no-games-today {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2.5rem;
+    text-align: center;
+    color: var(--muted);
+  }
+  .no-games-today .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .today-nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .today-nav button {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .today-nav button:hover { border-color: var(--green); color: var(--green-dark); }
+  .today-nav button.active-day {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .today-badge {
+    background: var(--red);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  @media (max-width: 600px) {
+    .countdown-units { gap: 0.6rem; }
+    .cunit { min-width: 55px; padding: 0.6rem 0.8rem; }
+    .cunit-num { font-size: 1.8rem; }
+  }
+    .header-stats { display: none; }
+    main { padding: 1rem; }
+    .fixture-card { grid-template-columns: 1fr auto 1fr; }
+    .team-owner-small { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="trophy">🏆</div>
+      <h1>World Cup <span>2026</span><br>Office Sweepstake</h1>
+      <div class="subtitle">USA · Canada · Mexico &nbsp;|&nbsp; 11 June – 19 July 2026</div>
+    </div>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-num">48</div><div class="hstat-label">Teams</div></div>
+      <div class="hstat"><div class="hstat-num">12</div><div class="hstat-label">Groups</div></div>
+      <div class="hstat"><div class="hstat-num">48</div><div class="hstat-label">Players</div></div>
+      <div class="hstat"><div class="hstat-num">104</div><div class="hstat-label">Matches</div></div>
+    </div>
+  </div>
+  <div class="stripe"></div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <button class="active" onclick="showSection('participants', this)">🗂 All Teams</button>
+    <button onclick="showSection('fixtures', this)">📅 Fixtures</button>
+    <button onclick="showSection('today', this)" id="today-tab">⚽ Today</button>
+    <button onclick="showSection('myteam', this)">👤 By Owner</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ALL TEAMS -->
+<section id="participants" class="section visible">
+  <div class="section-title">🌍 All 48 Teams &amp; Owners</div>
+  <input class="search-bar" type="text" placeholder="Search team or owner…" oninput="filterParticipants(this.value)">
+  <div class="participants-grid" id="participants-grid"></div>
+</section>
+
+<!-- FIXTURES -->
+<section id="fixtures" class="section">
+  <div class="section-title">📅 Group Stage Fixtures</div>
+  <div id="fixtures-container"></div>
+</section>
+
+<!-- TODAY -->
+<section id="today" class="section">
+  <div class="section-title" id="today-title">⚽ Today's Matches</div>
+  <div id="today-content"></div>
+</section>
+
+<!-- BY OWNER -->
+<section id="myteam" class="section">
+  <div class="section-title">👤 View by Owner</div>
+  <div class="owner-select-wrap">
+    <label for="owner-select">Select a participant:</label>
+    <select id="owner-select" onchange="renderOwnerView(this.value)">
+      <option value="">— choose owner —</option>
+    </select>
+  </div>
+  <div id="owner-content"></div>
+</section>
+
+</main>
+
+<script>
+const owners = {
+  "Algeria": "Ethan Mercer",
+  "Argentina": "Ava Holloway",
+  "Australia": "Liam Prescott",
+  "Austria": "Nora Whitfield",
+  "Belgium": "Mason Callahan",
+  "Bosnia & Herzegovina": "Chloe Bennett",
+  "Brazil": "Caleb Thornton",
+  "Canada": "Lily Hartwell",
+  "Cape Verde": "Owen Carlisle",
+  "Colombia": "Grace Ellison",
+  "Croatia": "Noah Fletcher",
+  "Curaçao": "Zoe Langford",
+  "Czechia": "Lucas Montgomery",
+  "DR Congo": "Ruby Sinclair",
+  "Ecuador": "Henry Sullivan",
+  "Egypt": "Mia Bradford",
+  "England": "Jack Donovan",
+  "France": "Emma Caldwell",
+  "Germany": "Samuel Hastings",
+  "Ghana": "Isla Reynolds",
+  "Haiti": "Benjamin Crawford",
+  "Iran": "Hannah Pierce",
+  "Iraq": "Daniel Whitaker",
+  "Ivory Coast": "Sophie Kendall",
+  "Japan": "Elijah Palmer",
+  "Jordan": "Lucy Harrington",
+  "Mexico": "Nathan Brooks",
+  "Morocco": "Stella Ramsey",
+  "Netherlands": "Isaac Thornton",
+  "New Zealand": "Violet Chandler",
+  "Norway": "Alexander Grant",
+  "Panama": "Claire Hudson",
+  "Paraguay": "Jacob Mercer",
+  "Portugal": "Eleanor Price",
+  "Qatar": "Matthew Collins",
+  "Saudi Arabia": "Audrey Bennett",
+  "Scotland": "Gabriel Lawson",
+  "Senegal": "Scarlett Monroe",
+  "South Africa": "Ryan Foster",
+  "South Korea": "Abigail Sutton",
+  "Spain": "Christopher Hayes",
+  "Sweden": "Madeline Parker",
+  "Switzerland": "Thomas Griffin",
+  "Tunisia": "Charlotte Dawson",
+  "Türkiye": "Andrew Wallace",
+  "Uruguay": "Penelope Rhodes",
+  "USA": "Jonathan Pierce",
+  "Uzbekistan": "Victoria Emerson"
+};
+
+const flags = {
+  "Algeria":"🇩🇿","Argentina":"🇦🇷","Australia":"🇦🇺","Austria":"🇦🇹","Belgium":"🇧🇪",
+  "Bosnia & Herzegovina":"🇧🇦","Brazil":"🇧🇷","Canada":"🇨🇦","Cape Verde":"🇨🇻",
+  "Colombia":"🇨🇴","Croatia":"🇭🇷","Curaçao":"🇨🇼","Czechia":"🇨🇿","DR Congo":"🇨🇩",
+  "Ecuador":"🇪🇨","Egypt":"🇪🇬","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","France":"🇫🇷","Germany":"🇩🇪",
+  "Ghana":"🇬🇭","Haiti":"🇭🇹","Iran":"🇮🇷","Iraq":"🇮🇶","Ivory Coast":"🇨🇮",
+  "Japan":"🇯🇵","Jordan":"🇯🇴","Mexico":"🇲🇽","Morocco":"🇲🇦","Netherlands":"🇳🇱",
+  "New Zealand":"🇳🇿","Norway":"🇳🇴","Panama":"🇵🇦","Paraguay":"🇵🇾","Portugal":"🇵🇹",
+  "Qatar":"🇶🇦","Saudi Arabia":"🇸🇦","Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Senegal":"🇸🇳",
+  "South Africa":"🇿🇦","South Korea":"🇰🇷","Spain":"🇪🇸","Sweden":"🇸🇪",
+  "Switzerland":"🇨🇭","Tunisia":"🇹🇳","Türkiye":"🇹🇷","Uruguay":"🇺🇾",
+  "USA":"🇺🇸","Uzbekistan":"🇺🇿"
+};
+
+const groups = {
+  A: ["Mexico","South Africa","South Korea","Czechia"],
+  B: ["Canada","Bosnia & Herzegovina","Qatar","Switzerland"],
+  C: ["Brazil","Morocco","Haiti","Scotland"],
+  D: ["USA","Paraguay","Australia","Türkiye"],
+  E: ["Germany","Curaçao","Ivory Coast","Ecuador"],
+  F: ["Netherlands","Japan","Sweden","Tunisia"],
+  G: ["Belgium","Egypt","Iran","New Zealand"],
+  H: ["Spain","Cape Verde","Saudi Arabia","Uruguay"],
+  I: ["France","Senegal","Iraq","Norway"],
+  J: ["Argentina","Algeria","Austria","Jordan"],
+  K: ["Portugal","DR Congo","Uzbekistan","Colombia"],
+  L: ["England","Croatia","Ghana","Panama"]
+};
+
+// Build team→group lookup
+const teamGroup = {};
+Object.entries(groups).forEach(([g, teams]) => teams.forEach(t => teamGroup[t] = g));
+
+// Generate all group fixtures
+const fixtures = [];
+const matchDates = {
+  A: ["11 Jun","14 Jun","22 Jun"],
+  B: ["12 Jun","16 Jun","22 Jun"],
+  C: ["13 Jun","17 Jun","23 Jun"],
+  D: ["12 Jun","16 Jun","23 Jun"],
+  E: ["13 Jun","17 Jun","24 Jun"],
+  F: ["14 Jun","18 Jun","24 Jun"],
+  G: ["15 Jun","19 Jun","25 Jun"],
+  H: ["15 Jun","19 Jun","25 Jun"],
+  I: ["16 Jun","20 Jun","26 Jun"],
+  J: ["16 Jun","20 Jun","26 Jun"],
+  K: ["17 Jun","21 Jun","27 Jun"],
+  L: ["17 Jun","21 Jun","27 Jun"]
+};
+
+Object.entries(groups).forEach(([g, teams]) => {
+  const dates = matchDates[g];
+  fixtures.push({group:g, home:teams[0], away:teams[1], date:dates[0]});
+  fixtures.push({group:g, home:teams[2], away:teams[3], date:dates[0]});
+  fixtures.push({group:g, home:teams[0], away:teams[2], date:dates[1]});
+  fixtures.push({group:g, home:teams[1], away:teams[3], date:dates[1]});
+  fixtures.push({group:g, home:teams[0], away:teams[3], date:dates[2]});
+  fixtures.push({group:g, home:teams[1], away:teams[2], date:dates[2]});
+});
+
+function teamCard(team, align='left') {
+  const isRight = align === 'right';
+  return `<div class="fixture-team ${isRight ? 'right' : ''}">
+    <span class="team-flag">${flags[team]||'🏳'}</span>
+    <div class="team-info">
+      <div class="team-name">${team}</div>
+      <div class="team-owner-small">${owners[team]||''}</div>
+    </div>
+  </div>`;
+}
+
+// --- PARTICIPANTS ---
+function renderParticipants(filter='') {
+  const grid = document.getElementById('participants-grid');
+  const f = filter.toLowerCase();
+  const cards = Object.entries(owners)
+    .filter(([team, owner]) => !f || team.toLowerCase().includes(f) || owner.toLowerCase().includes(f))
+    .sort((a,b) => a[0].localeCompare(b[0]))
+    .map(([team, owner]) => `
+      <div class="p-card">
+        <div class="p-flag">${flags[team]||'🏳'}</div>
+        <div class="p-team">${team}</div>
+        <div><span class="p-group">Group ${teamGroup[team]}</span></div>
+        <div class="p-owner">${owner}</div>
+      </div>
+    `).join('');
+  grid.innerHTML = cards || '<p style="color:var(--muted);grid-column:1/-1">No results found.</p>';
+}
+
+function filterParticipants(v) { renderParticipants(v); }
+
+// --- FIXTURES ---
+function renderFixtures() {
+  const container = document.getElementById('fixtures-container');
+  let html = '';
+  Object.entries(groups).forEach(([g, teams]) => {
+    const gFixtures = fixtures.filter(f => f.group === g);
+    html += `<div class="group-block">
+      <div class="group-heading">
+        GROUP ${g}
+        <span class="group-teams-pill">${teams.join(' · ')}</span>
+      </div>
+      <div class="fixtures-list">`;
+    gFixtures.forEach(f => {
+      html += `<div class="fixture-card">
+        ${teamCard(f.home, 'left')}
+        <div class="fixture-vs">
+          <div class="vs-badge">VS</div>
+          <div class="vs-date">${f.date}</div>
+        </div>
+        ${teamCard(f.away, 'right')}
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+// --- OWNER VIEW ---
+function renderOwnerView(owner) {
+  const content = document.getElementById('owner-content');
+  if (!owner) { content.innerHTML = ''; return; }
+
+  const myTeams = Object.entries(owners).filter(([,o]) => o === owner).map(([t]) => t);
+  const initials = owner.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  let html = `<div class="owner-profile">
+    <div class="owner-avatar">${initials}</div>
+    <div>
+      <div class="owner-name">${owner}</div>
+      <div class="owner-tag">${myTeams.length} team${myTeams.length!==1?'s':''} in the sweepstake</div>
+    </div>
+  </div>`;
+
+  html += `<div class="owner-fixtures-title">🏟 Your Teams</div>
+  <div class="owner-teams-grid">`;
+  myTeams.forEach(t => {
+    html += `<div class="owner-team-card">
+      <span class="owner-team-flag">${flags[t]||'🏳'}</span>
+      <div>
+        <div class="owner-team-name">${t}</div>
+        <div class="owner-team-group">Group ${teamGroup[t]}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  const myFixtures = fixtures.filter(f => myTeams.includes(f.home) || myTeams.includes(f.away));
+  html += `<div class="owner-fixtures-title">📅 Your Fixtures (${myFixtures.length} matches)</div>
+  <div class="fixtures-list">`;
+
+  myFixtures.sort((a,b) => a.date.localeCompare(b.date)).forEach(f => {
+    const both = myTeams.includes(f.home) && myTeams.includes(f.away);
+    html += `<div class="fixture-card highlighted-fixture">
+      ${teamCard(f.home, 'left')}
+      <div class="fixture-vs">
+        <div class="vs-badge">VS</div>
+        <div class="vs-date">${f.date}</div>
+        ${both ? `<div style="margin-top:4px"><span class="both-teams-badge">Both yours!</span></div>` : ''}
+      </div>
+      ${teamCard(f.away, 'right')}
+    </div>`;
+  });
+
+  html += '</div>';
+  content.innerHTML = html;
+}
+
+// --- NAV ---
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  btn.classList.add('active');
+}
+
+// --- TODAY / DATE NAV ---
+
+// All match dates in tournament (group stage)
+const allMatchDates = [...new Set(fixtures.map(f => f.date))].sort((a,b) => {
+  const parse = d => { const [day,mon] = d.split(' '); return new Date(`${mon} ${day} 2026`); };
+  return parse(a) - parse(b);
+});
+
+const TOURNAMENT_START = new Date('2026-06-11T00:00:00');
+const TOURNAMENT_END   = new Date('2026-07-19T23:59:59');
+
+function parseDateStr(ds) {
+  // ds = "11 Jun" etc.
+  const [day, mon] = ds.split(' ');
+  return new Date(`${mon} ${day} 2026`);
+}
+
+function formatDateStr(d) {
+  return d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+}
+
+function isSameDay(a, b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+function renderToday() {
+  const content = document.getElementById('today-content');
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  // Before tournament
+  if (now < TOURNAMENT_START) {
+    const diff = TOURNAMENT_START - now;
+    const days  = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+    const mins  = Math.floor((diff % (1000*60*60)) / (1000*60));
+    const secs  = Math.floor((diff % (1000*60)) / 1000);
+
+    content.innerHTML = `
+      <div class="countdown-wrap">
+        <div class="countdown-label">Tournament kicks off in</div>
+        <div class="countdown-units">
+          <div class="cunit"><div class="cunit-num" id="cd-d">${days}</div><div class="cunit-label">Days</div></div>
+          <div class="cunit"><div class="cunit-num" id="cd-h">${String(hours).padStart(2,'0')}</div><div class="cunit-label">Hours</div></div>
+          <div class="cunit"><div class="cunit-num" id="cd-m">${String(mins).padStart(2,'0')}</div><div class="cunit-label">Mins</div></div>
+          <div class="cunit"><div class="cunit-num" id="cd-s">${String(secs).padStart(2,'0')}</div><div class="cunit-label">Secs</div></div>
+        </div>
+        <div class="countdown-msg">🇲🇽 Mexico vs South Africa opens the tournament on 11 June in Mexico City</div>
+      </div>
+      <div class="today-fixtures-preview"></div>`;
+
+    // Live countdown
+    if (window._countdownInterval) clearInterval(window._countdownInterval);
+    window._countdownInterval = setInterval(() => {
+      const diff2 = TOURNAMENT_START - new Date();
+      if (diff2 <= 0) { clearInterval(window._countdownInterval); renderToday(); return; }
+      document.getElementById('cd-d').textContent = Math.floor(diff2/(1000*60*60*24));
+      document.getElementById('cd-h').textContent = String(Math.floor((diff2%(1000*60*60*24))/(1000*60*60))).padStart(2,'0');
+      document.getElementById('cd-m').textContent = String(Math.floor((diff2%(1000*60*60))/(1000*60))).padStart(2,'0');
+      document.getElementById('cd-s').textContent = String(Math.floor((diff2%(1000*60))/1000)).padStart(2,'0');
+    }, 1000);
+
+    // Also show upcoming first match day below countdown
+    renderDayFixtures('11 Jun', document.querySelector('.today-fixtures-preview'), false);
+    return;
+  }
+
+  // After tournament
+  if (now > TOURNAMENT_END) {
+    content.innerHTML = `<div class="no-games-today"><div class="icon">🏆</div><p>The 2026 World Cup has concluded. What a tournament!</p></div>`;
+    return;
+  }
+
+  // During tournament — find today's matches
+  const todayStr = allMatchDates.find(ds => isSameDay(parseDateStr(ds), today));
+
+  // Date nav buttons
+  let navHtml = '<div class="today-nav">';
+  allMatchDates.forEach(ds => {
+    const isToday = isSameDay(parseDateStr(ds), today);
+    navHtml += `<button class="${isToday ? 'active-day' : ''}" onclick="renderDayFixtures('${ds}', document.getElementById('day-fixtures'), true)">
+      ${ds}${isToday ? '<span class="today-badge">Today</span>' : ''}
+    </button>`;
+  });
+  navHtml += '</div><div id="day-fixtures"></div>';
+  content.innerHTML = navHtml;
+
+  const defaultDate = todayStr || allMatchDates[0];
+  renderDayFixtures(defaultDate, document.getElementById('day-fixtures'), true);
+}
+
+function renderDayFixtures(dateStr, container, showHeader) {
+  if (!container) return;
+  const dayFix = fixtures.filter(f => f.date === dateStr);
+  if (dayFix.length === 0) {
+    container.innerHTML = `<div class="no-games-today"><div class="icon">😴</div><p>No group stage matches on ${dateStr}.</p></div>`;
+    return;
+  }
+  let html = '';
+  if (showHeader) {
+    const d = parseDateStr(dateStr);
+    html += `<div class="today-date-heading">${formatDateStr(d)} — ${dayFix.length} match${dayFix.length!==1?'es':''}</div>`;
+  } else {
+    html += `<div class="owner-fixtures-title" style="margin-bottom:0.8rem">⚽ First matches — 11 June</div>`;
+  }
+  html += '<div class="fixtures-list">';
+  dayFix.forEach(f => {
+    html += `<div class="fixture-card">
+      ${teamCard(f.home,'left')}
+      <div class="fixture-vs">
+        <div class="vs-badge">VS</div>
+        <div class="vs-date">Grp ${f.group}</div>
+      </div>
+      ${teamCard(f.away,'right')}
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// Render today on load
+renderToday();
+renderParticipants();
+renderFixtures();
+
+// Populate owner dropdown
+const sel = document.getElementById('owner-select');
+const uniqueOwners = [...new Set(Object.values(owners))].sort();
+uniqueOwners.forEach(o => {
+  const opt = document.createElement('option');
+  opt.value = o; opt.textContent = o;
+  sel.appendChild(opt);
+});
+</script>
+</body>
+</html>
