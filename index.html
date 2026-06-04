@@ -246,12 +246,14 @@
   .team-info { min-width: 0; }
   .team-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .team-owner-small {
-    font-size: 0.72rem;
-    color: var(--muted);
+    font-size: 0.75rem;
+    color: var(--green-dark);
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .team-owner-small::before { content: '👤 '; font-size: 0.68rem; }
   .fixture-vs {
     text-align: center;
     flex-shrink: 0;
@@ -398,7 +400,88 @@
   }
   .search-bar:focus { border-color: var(--green); }
 
-  /* TODAY */
+  /* SCORES & ADMIN */
+  .score-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    line-height: 1;
+    text-align: center;
+  }
+  .score-display.played { color: var(--green-dark); }
+  .score-display sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0;
+    display: block;
+    text-align: center;
+    margin-top: 2px;
+  }
+  .admin-fixture-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+    margin-bottom: 0.5rem;
+  }
+  .admin-fixture-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.07); border-color: var(--green); }
+  .score-inputs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+  }
+  .score-input {
+    width: 44px;
+    text-align: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    padding: 0.3rem 0.2rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    background: var(--bg);
+  }
+  .score-input:focus { border-color: var(--green); background: #fff; }
+  .score-dash { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--muted); }
+  .save-score-btn {
+    display: block;
+    width: 100%;
+    margin-top: 0.5rem;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .save-score-btn:hover { background: var(--green-dark); }
+  .admin-group-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    background: var(--green);
+    color: #fff;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    margin-top: 1.2rem;
+  }
+  .fixture-card.has-score { border-left: 3px solid var(--green); }
+
+  
   .countdown-wrap {
     background: var(--green-dark);
     color: #fff;
@@ -506,7 +589,8 @@
     .header-stats { display: none; }
     main { padding: 1rem; }
     .fixture-card { grid-template-columns: 1fr auto 1fr; }
-    .team-owner-small { display: none; }
+    .team-name { font-size: 0.82rem; }
+    .team-owner-small { font-size: 0.68rem; }
   }
 </style>
 </head>
@@ -535,6 +619,7 @@
     <button onclick="showSection('fixtures', this)">📅 Fixtures</button>
     <button onclick="showSection('today', this)" id="today-tab">⚽ Today</button>
     <button onclick="showSection('myteam', this)">👤 By Owner</button>
+    <button onclick="showSection('admin', this)">🔒 Scores</button>
   </div>
 </nav>
 
@@ -559,7 +644,24 @@
   <div id="today-content"></div>
 </section>
 
-<!-- BY OWNER -->
+<!-- ADMIN SCORES -->
+<section id="admin" class="section">
+  <div class="section-title">🔒 Enter Scores</div>
+  <div id="admin-lock">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:380px;">
+      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">Enter the admin password to update scores.</p>
+      <input type="password" id="admin-pw" placeholder="Password" style="width:100%;margin-bottom:0.8rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;padding:0.55rem 1rem;border:1px solid var(--border);border-radius:8px;outline:none;">
+      <button onclick="checkAdminPw()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:8px;padding:0.6rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer;">Unlock</button>
+      <p id="admin-pw-error" style="color:var(--red);font-size:0.8rem;margin-top:0.5rem;display:none;">Incorrect password.</p>
+    </div>
+  </div>
+  <div id="admin-panel" style="display:none;">
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;">Click any match to enter or update the score. Scores are saved in your browser and shown across all tabs.</p>
+    <div id="admin-fixtures-container"></div>
+  </div>
+</section>
+
+
 <section id="myteam" class="section">
   <div class="section-title">👤 View by Owner</div>
   <div class="owner-select-wrap">
@@ -716,7 +818,18 @@ function renderParticipants(filter='') {
 
 function filterParticipants(v) { renderParticipants(v); }
 
-// --- FIXTURES ---
+function fixtureCard(f, highlight=false) {
+  const score = getScore(f);
+  const hasScore = score !== null;
+  const vsContent = hasScore
+    ? `<div class="score-display played">${score.s1} – ${score.s2}<sub>FT</sub></div>`
+    : `<div class="vs-badge">VS</div><div class="vs-date">${f.date}</div>`;
+  return `<div class="fixture-card ${highlight ? 'highlighted-fixture' : ''} ${hasScore ? 'has-score' : ''}">
+    ${teamCard(f.home,'left')}
+    <div class="fixture-vs">${vsContent}</div>
+    ${teamCard(f.away,'right')}
+  </div>`;
+}
 function renderFixtures() {
   const container = document.getElementById('fixtures-container');
   let html = '';
@@ -728,16 +841,7 @@ function renderFixtures() {
         <span class="group-teams-pill">${teams.join(' · ')}</span>
       </div>
       <div class="fixtures-list">`;
-    gFixtures.forEach(f => {
-      html += `<div class="fixture-card">
-        ${teamCard(f.home, 'left')}
-        <div class="fixture-vs">
-          <div class="vs-badge">VS</div>
-          <div class="vs-date">${f.date}</div>
-        </div>
-        ${teamCard(f.away, 'right')}
-      </div>`;
-    });
+    gFixtures.forEach(f => { html += fixtureCard(f); });
     html += `</div></div>`;
   });
   container.innerHTML = html;
@@ -778,15 +882,8 @@ function renderOwnerView(owner) {
 
   myFixtures.sort((a,b) => a.date.localeCompare(b.date)).forEach(f => {
     const both = myTeams.includes(f.home) && myTeams.includes(f.away);
-    html += `<div class="fixture-card highlighted-fixture">
-      ${teamCard(f.home, 'left')}
-      <div class="fixture-vs">
-        <div class="vs-badge">VS</div>
-        <div class="vs-date">${f.date}</div>
-        ${both ? `<div style="margin-top:4px"><span class="both-teams-badge">Both yours!</span></div>` : ''}
-      </div>
-      ${teamCard(f.away, 'right')}
-    </div>`;
+    html += fixtureCard(f, true);
+    if (both) html = html.replace('</div>\n  </div>', `<div style="text-align:center;margin-top:4px"><span class="both-teams-badge">Both yours!</span></div>\n  </div>`);
   });
 
   html += '</div>';
@@ -801,7 +898,84 @@ function showSection(id, btn) {
   btn.classList.add('active');
 }
 
-// --- TODAY / DATE NAV ---
+// --- SCORES (localStorage) ---
+const ADMIN_PASSWORD = 'worldcup2026';
+const SCORES_KEY = 'wc2026_scores';
+
+function getScores() {
+  try { return JSON.parse(localStorage.getItem(SCORES_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveScore(matchKey, s1, s2) {
+  const scores = getScores();
+  if (s1 === '' && s2 === '') { delete scores[matchKey]; }
+  else { scores[matchKey] = { s1: parseInt(s1), s2: parseInt(s2) }; }
+  localStorage.setItem(SCORES_KEY, JSON.stringify(scores));
+}
+function matchKey(f) { return `${f.group}_${f.home}_${f.away}`; }
+function getScore(f) { return getScores()[matchKey(f)] || null; }
+
+// --- ADMIN ---
+function checkAdminPw() {
+  const pw = document.getElementById('admin-pw').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('admin-lock').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    renderAdminFixtures();
+  } else {
+    document.getElementById('admin-pw-error').style.display = 'block';
+  }
+}
+document.getElementById('admin-pw').addEventListener('keydown', e => { if(e.key==='Enter') checkAdminPw(); });
+
+function renderAdminFixtures() {
+  const container = document.getElementById('admin-fixtures-container');
+  let html = '';
+  Object.entries(groups).forEach(([g, teams]) => {
+    html += `<div class="admin-group-heading">Group ${g}</div>`;
+    fixtures.filter(f => f.group === g).forEach(f => {
+      const score = getScore(f);
+      const key = matchKey(f);
+      const s1 = score ? score.s1 : '';
+      const s2 = score ? score.s2 : '';
+      html += `<div class="admin-fixture-row">
+        <div style="text-align:right">
+          <div style="font-weight:600;font-size:0.9rem">${flags[f.home]||''} ${f.home}</div>
+          <div style="font-size:0.72rem;color:var(--muted)">${owners[f.home]||''}</div>
+        </div>
+        <div>
+          <div class="score-inputs">
+            <input class="score-input" type="number" min="0" max="30" value="${s1}" id="s1_${key}" placeholder="0">
+            <span class="score-dash">–</span>
+            <input class="score-input" type="number" min="0" max="30" value="${s2}" id="s2_${key}" placeholder="0">
+          </div>
+          <button class="save-score-btn" onclick="doSave('${key}','${f.group}','${f.home}','${f.away}')">Save</button>
+          <div style="font-size:0.68rem;color:var(--muted);text-align:center;margin-top:3px">${f.date}</div>
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:0.9rem">${flags[f.away]||''} ${f.away}</div>
+          <div style="font-size:0.72rem;color:var(--muted)">${owners[f.away]||''}</div>
+        </div>
+      </div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+
+function doSave(key, group, home, away) {
+  const s1 = document.getElementById('s1_'+key).value;
+  const s2 = document.getElementById('s2_'+key).value;
+  saveScore(key, s1, s2);
+  // Refresh fixtures and today views
+  renderFixtures();
+  renderToday();
+  // Flash feedback
+  const btn = event.target;
+  btn.textContent = '✓ Saved!';
+  btn.style.background = 'var(--gold)';
+  setTimeout(() => { btn.textContent = 'Save'; btn.style.background = ''; }, 1500);
+}
+
+
 
 // All match dates in tournament (group stage)
 const allMatchDates = [...new Set(fixtures.map(f => f.date))].sort((a,b) => {
@@ -907,16 +1081,7 @@ function renderDayFixtures(dateStr, container, showHeader) {
     html += `<div class="owner-fixtures-title" style="margin-bottom:0.8rem">⚽ First matches — 11 June</div>`;
   }
   html += '<div class="fixtures-list">';
-  dayFix.forEach(f => {
-    html += `<div class="fixture-card">
-      ${teamCard(f.home,'left')}
-      <div class="fixture-vs">
-        <div class="vs-badge">VS</div>
-        <div class="vs-date">Grp ${f.group}</div>
-      </div>
-      ${teamCard(f.away,'right')}
-    </div>`;
-  });
+  dayFix.forEach(f => { html += fixtureCard(f); });
   html += '</div>';
   container.innerHTML = html;
 }
