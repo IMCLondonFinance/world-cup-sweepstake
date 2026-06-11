@@ -334,6 +334,27 @@ const groups={
 const teamGroup={};
 Object.entries(groups).forEach(([g,ts])=>ts.forEach(t=>teamGroup[t]=g));
 
+// Static schedule fallback — used before API loads
+const staticSchedule={
+  A:[['Mexico','South Africa','11 Jun'],['South Korea','Czechia','11 Jun'],['Mexico','South Korea','15 Jun'],['South Africa','Czechia','15 Jun'],['Mexico','Czechia','19 Jun'],['South Africa','South Korea','19 Jun']],
+  B:[['Canada','Bosnia & Herzegovina','12 Jun'],['Qatar','Switzerland','12 Jun'],['Canada','Qatar','16 Jun'],['Bosnia & Herzegovina','Switzerland','16 Jun'],['Canada','Switzerland','20 Jun'],['Bosnia & Herzegovina','Qatar','20 Jun']],
+  C:[['Brazil','Morocco','13 Jun'],['Haiti','Scotland','13 Jun'],['Brazil','Haiti','17 Jun'],['Morocco','Scotland','17 Jun'],['Brazil','Scotland','21 Jun'],['Morocco','Haiti','21 Jun']],
+  D:[['USA','Paraguay','12 Jun'],['Australia','Türkiye','12 Jun'],['USA','Australia','16 Jun'],['Paraguay','Türkiye','16 Jun'],['USA','Türkiye','20 Jun'],['Paraguay','Australia','20 Jun']],
+  E:[['Germany','Curaçao','13 Jun'],['Ivory Coast','Ecuador','13 Jun'],['Germany','Ivory Coast','17 Jun'],['Curaçao','Ecuador','17 Jun'],['Germany','Ecuador','21 Jun'],['Curaçao','Ivory Coast','21 Jun']],
+  F:[['Netherlands','Japan','14 Jun'],['Sweden','Tunisia','14 Jun'],['Netherlands','Sweden','18 Jun'],['Japan','Tunisia','18 Jun'],['Netherlands','Tunisia','22 Jun'],['Japan','Sweden','22 Jun']],
+  G:[['Belgium','Egypt','15 Jun'],['Iran','New Zealand','15 Jun'],['Belgium','Iran','19 Jun'],['Egypt','New Zealand','19 Jun'],['Belgium','New Zealand','23 Jun'],['Egypt','Iran','23 Jun']],
+  H:[['Spain','Cape Verde','15 Jun'],['Saudi Arabia','Uruguay','15 Jun'],['Spain','Saudi Arabia','19 Jun'],['Cape Verde','Uruguay','19 Jun'],['Spain','Uruguay','23 Jun'],['Cape Verde','Saudi Arabia','23 Jun']],
+  I:[['France','Senegal','16 Jun'],['Iraq','Norway','16 Jun'],['France','Iraq','20 Jun'],['Senegal','Norway','20 Jun'],['France','Norway','24 Jun'],['Senegal','Iraq','24 Jun']],
+  J:[['Argentina','Algeria','16 Jun'],['Austria','Jordan','16 Jun'],['Argentina','Austria','20 Jun'],['Algeria','Jordan','20 Jun'],['Argentina','Jordan','24 Jun'],['Algeria','Austria','24 Jun']],
+  K:[['Portugal','DR Congo','17 Jun'],['Uzbekistan','Colombia','17 Jun'],['Portugal','Uzbekistan','21 Jun'],['DR Congo','Colombia','21 Jun'],['Portugal','Colombia','25 Jun'],['DR Congo','Uzbekistan','25 Jun']],
+  L:[['England','Croatia','17 Jun'],['Ghana','Panama','17 Jun'],['England','Ghana','21 Jun'],['Croatia','Panama','21 Jun'],['England','Panama','25 Jun'],['Croatia','Ghana','25 Jun']]
+};
+// Build flat lookup: "Home|Away" -> date
+const staticDates={};
+Object.values(staticSchedule).forEach(pairs=>{
+  pairs.forEach(([h,a,d])=>{staticDates[h+'|'+a]=d; staticDates[a+'|'+h]=d;});
+});
+
 const nameMap={
   "Korea Republic":"South Korea","Czech Republic":"Czechia","Bosnia and Herzegovina":"Bosnia & Herzegovina",
   "Curacao":"Cura\u00e7ao","Congo DR":"DR Congo","C\u00f4te d'Ivoire":"Ivory Coast",
@@ -754,7 +775,10 @@ function findMatch(home,away){
 }
 function matchInfo(home,away){
   const m=findMatch(home,away);
-  if(!m)return{type:'unknown'};
+  if(!m){
+    const d=staticDates[home+'|'+away]||staticDates[away+'|'+home]||'';
+    return{type:'upcoming',date:d,time:''};
+  }
   const apiHome=norm(m.homeTeam?.shortName||m.homeTeam?.name||'');
   const swapped=apiHome!==home;
   const s=m.score;
