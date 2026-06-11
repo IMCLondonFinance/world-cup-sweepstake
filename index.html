@@ -772,11 +772,12 @@ function teamCard(t,align){
   return '<div class="fixture-team'+(r?' right':'')+'"><span class="team-flag">'+(flags[t]||'🏳')+'</span><div class="team-info"><div class="team-name">'+t+'</div><div class="team-owner-small">'+(owners[t]||'')+'</div></div></div>';
 }
 function vsBlock(info){
-  if(info.type==='ft')return '<div class="fixture-vs"><div class="score-box">'+info.s1+' \u2013 '+info.s2+'</div><div class="score-label">Full time</div></div>';
-  if(info.type==='live')return '<div class="fixture-vs"><div class="score-box live">'+info.s1+' \u2013 '+info.s2+'</div><div class="score-label live">\u25cf Live</div></div>';
-  if(info.type==='ht')return '<div class="fixture-vs"><div class="score-box live">'+info.s1+' \u2013 '+info.s2+'</div><div class="score-label live">Half time</div></div>';
-  const t=info.time?'<div style="font-size:.65rem;color:var(--muted);margin-top:1px">'+info.time+' local</div>':'';
-  return '<div class="fixture-vs"><div class="vs-badge">VS</div><div class="vs-date">'+(info.date||'')+t+'</div></div>';
+  const dateTag=info.date?'<div class="vs-date">'+info.date+'</div>':'';
+  if(info.type==='ft')return '<div class="fixture-vs"><div class="score-box">'+info.s1+' \u2013 '+info.s2+'</div><div class="score-label">Full time</div>'+dateTag+'</div>';
+  if(info.type==='live')return '<div class="fixture-vs"><div class="score-box live">'+info.s1+' \u2013 '+info.s2+'</div><div class="score-label live">\u25cf Live</div>'+dateTag+'</div>';
+  if(info.type==='ht')return '<div class="fixture-vs"><div class="score-box live">'+info.s1+' \u2013 '+info.s2+'</div><div class="score-label live">Half time</div>'+dateTag+'</div>';
+  const t=info.time?'<div style="font-size:.65rem;color:var(--muted);margin-top:1px">'+info.time+'</div>':'';
+  return '<div class="fixture-vs"><div class="vs-badge">VS</div>'+dateTag+t+'</div>';
 }
 function fixtureCard(home,away,hl){
   const info=matchInfo(home,away);
