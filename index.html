@@ -288,7 +288,7 @@ const owners={
   "South Africa":"Spencer Delman",
   "South Korea":"Alexander Ross",
   "Spain":"Camille Fontaine",
-  "Sweden":"Jinru Li",
+  "Sweden":"Joseph Corp",
   "Switzerland":"Anthony Paul",
   "Tunisia":"Efe Saman",
   "Türkiye":"Jonathan Fox",
@@ -367,14 +367,14 @@ function norm(n){return nameMap[n]||n;}
 // type: 'auto' = computed from API data, 'manual' = entered by hand
 const PRIZES=[
   // AUTO prizes
-  {id:'winner',     icon:'🏆',name:'Winner',              how:"Your team lifts the trophy. Also claims the pitch invader prize if none occur.", amount:175,type:'auto',autoKey:'winner'},
+  {id:'winner',     icon:'🏆',name:'Winner',              how:"Your team lifts the trophy. Also claims the pitch invader prize if none occur.", amount:155,type:'auto',autoKey:'winner'},
   {id:'runner',     icon:'🥈',name:'Runner-up',            how:'Your team reaches the final but loses.',                                        amount:50, type:'auto',autoKey:'runner'},
   {id:'third',      icon:'🥉',name:'Third place',          how:'Wins the third-place play-off.',                                               amount:25, type:'auto',autoKey:'third'},
   {id:'mostgoals',  icon:'⚽',name:'Most goals scored',    how:'Most goals scored across all matches (group + knockouts).',                    amount:20, type:'auto',autoKey:'mostGoals'},
   {id:'cleansheets',icon:'🧱',name:'Most clean sheets',    how:'Most matches without conceding across the tournament.',                        amount:15, type:'auto',autoKey:'cleanSheets'},
   {id:'woodenspoon',icon:'🥄',name:'Wooden spoon',         how:'Worst group-stage record — fewest points, then GD.',                          amount:15, type:'auto',autoKey:'woodenSpoon'},
   {id:'worstdef',   icon:'🧤',name:'Worst defence',        how:'Most goals conceded across all matches.',                                      amount:10, type:'auto',autoKey:'worstDefence'},
-  {id:'mostdraws',  icon:'🤝',name:'Most draws',           how:'Most drawn matches in the group stage.',                                       amount:10, type:'auto',autoKey:'mostDraws'},
+  {id:'mostdraws',  icon:'🤝',name:'Most draws',           how:'Most drawn matches in the group stage. Tiebreak: most losses (conceded wins).',                                       amount:10, type:'auto',autoKey:'mostDraws'},
   {id:'bigwin',     icon:'💥',name:'Biggest single win',   how:'Largest winning margin in any single match.',                                  amount:10, type:'auto',autoKey:'biggestWin'},
   {id:'bigloss',    icon:'😭',name:'Biggest single loss',  how:'Largest losing margin suffered in any single match.',                         amount:10, type:'auto',autoKey:'biggestLoss'},
   {id:'earliestexit',icon:'✈️',name:'Earliest exit',       how:'First team eliminated. Tiebreak: fewest goals scored.',                       amount:10, type:'auto',autoKey:'earliestExit'},
@@ -478,10 +478,14 @@ function computeAutoResults(){
     const topGoals=byGoals[0];
     results.mostGoals={team:topGoals.team,stat:`${topGoals.gf} goals scored`,tied:byGoals.filter(x=>x.gf===topGoals.gf).map(x=>x.team)};
 
-    // Most draws (group stage only)
-    const byDraws=[...st].sort((a,b)=>b.draw-a.draw);
+    // Most draws (group stage only) — tiebreak: most losses (conceded wins)
+    const byDraws=[...st].sort((a,b)=>b.draw-a.draw||b.lost-a.lost);
     const topDraws=byDraws[0];
-    results.mostDraws={team:topDraws.team,stat:`${topDraws.draw} draws`,tied:byDraws.filter(x=>x.draw===topDraws.draw).map(x=>x.team)};
+    const drawTied=byDraws.filter(x=>x.draw===topDraws.draw);
+    const drawStat=drawTied.length>1&&drawTied[0].lost===drawTied[1].lost
+      ?`${topDraws.draw} draws (tied)`
+      :`${topDraws.draw} draws${drawTied.length>1?' (tiebreak: '+topDraws.lost+' losses)':''}`;
+    results.mostDraws={team:topDraws.team,stat:drawStat};
 
     // Worst defence (most goals against - across all matches)
     // Use finished match data for full tournament (not just group)
