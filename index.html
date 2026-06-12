@@ -367,12 +367,20 @@ Object.values(staticSchedule).forEach(pairs=>{
 });
 
 const nameMap={
-  "Korea Republic":"South Korea","Czech Republic":"Czechia","Bosnia and Herzegovina":"Bosnia & Herzegovina",
-  "Curacao":"Cura\u00e7ao","Congo DR":"DR Congo","C\u00f4te d'Ivoire":"Ivory Coast",
-  "United States":"USA","Turkey":"T\u00fcrkiye","Cura\u00e7ao":"Cura\u00e7ao","DR Congo":"DR Congo",
-  "Ivory Coast":"Ivory Coast","T\u00fcrkiye":"T\u00fcrkiye","Czechia":"Czechia"
+  "Korea Republic":"South Korea","Czech Republic":"Czechia",
+  "Bosnia and Herzegovina":"Bosnia & Herzegovina",
+  "Curacao":"Curaçao","Congo DR":"DR Congo","Côte d'Ivoire":"Ivory Coast",
+  "United States":"USA","Turkey":"Türkiye"
 };
 function norm(n){return nameMap[n]||n;}
+
+function findMatch(home,away){
+  return apiMatches.find(m=>{
+    const hn=[m.homeTeam?.shortName,m.homeTeam?.name].map(n=>norm(n||'')).filter(Boolean);
+    const an=[m.awayTeam?.shortName,m.awayTeam?.name].map(n=>norm(n||'')).filter(Boolean);
+    return (hn.includes(home)&&an.includes(away))||(hn.includes(away)&&an.includes(home));
+  });
+}
 
 // ── PRIZE DEFINITIONS ────────────────────────────────────────────
 // type: 'auto' = computed from API data, 'manual' = entered by hand
@@ -793,13 +801,7 @@ function renderPrizes(){
 
 
 // ── FIXTURES ─────────────────────────────────────────────────────
-function findMatch(home,away){
-  return apiMatches.find(m=>{
-    const h=norm(m.homeTeam?.shortName||m.homeTeam?.name||'');
-    const a=norm(m.awayTeam?.shortName||m.awayTeam?.name||'');
-    return(h===home&&a===away)||(h===away&&a===home);
-  });
-}
+
 function matchInfo(home,away){
   const m=findMatch(home,away);
   if(!m){
