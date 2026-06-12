@@ -146,6 +146,18 @@ select:focus{border-color:var(--green)}
 .prize-leader.auto::before{content:'📡 '}
 .prize-leader.manual::before{content:'✏️ '}
 .prize-stat{font-size:.72rem;color:var(--muted);margin-top:2px}
+  .prize-leader-box{margin-top:.6rem;padding:.55rem .7rem;border-radius:7px;border:1px solid var(--border)}
+  .prize-leader-box.auto{background:var(--green-light);border-color:#b5dac7}
+  .prize-leader-box.manual{background:var(--gold-light);border-color:#e0c070}
+  .prize-leader-box.pending{background:var(--bg);border-color:var(--border)}
+  .prize-leader-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);margin-bottom:.3rem;display:flex;align-items:center;gap:.4rem}
+  .prize-leader-box.auto .prize-leader-label{color:var(--green-dark)}
+  .prize-leader-box.manual .prize-leader-label{color:#8a5e00}
+  .prize-leader-team{display:inline-flex;align-items:center;gap:.3rem;font-size:.82rem;flex-wrap:wrap}
+  .prize-leader-owner{font-size:.75rem;color:var(--muted);font-weight:400}
+  .prize-leader-vs{font-size:.75rem;color:var(--muted);margin:0 .2rem}
+  .prize-src-badge{background:rgba(0,0,0,.08);border-radius:4px;padding:1px 5px;font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .prize-pending-note{font-size:.78rem;color:var(--muted);font-style:italic}
 
 /* MANUAL ADMIN */
 .manual-form{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-bottom:.7rem}
@@ -243,7 +255,6 @@ select:focus{border-color:var(--green)}
 
 </main>
 <script>
-const API_TOKEN='69dfe4295e3e4f20ba53fc5f11e8db8d';
 
 // ── SWEEPSTAKE DATA ──────────────────────────────────────────────
 const owners={
@@ -409,21 +420,20 @@ function setManual(id,val){const m=getManual();if(val!==null&&val!==undefined&&v
 // ── FETCH ────────────────────────────────────────────────────────
 async function fetchAll(){
   try{
-    const [mRes,sRes,scRes]=await Promise.all([
-      fetch('https://api.football-data.org/v4/competitions/WC/matches?season=2026',{headers:{'X-Auth-Token':API_TOKEN}}),
-      fetch('https://api.football-data.org/v4/competitions/WC/standings?season=2026',{headers:{'X-Auth-Token':API_TOKEN}}),
-      fetch('https://api.football-data.org/v4/competitions/WC/scorers?season=2026&limit=20',{headers:{'X-Auth-Token':API_TOKEN}})
-    ]);
-    if(mRes.ok){const d=await mRes.json();apiMatches=d.matches||[];}
-    if(sRes.ok){const d=await sRes.json();apiStandings=d.standings||[];}
-    if(scRes.ok){const d=await scRes.json();apiScorers=d.scorers||[];}
-    lastUpdated=new Date();
+    // scores.json is updated every 5 mins by GitHub Actions — no CORS issues
+    const res=await fetch('scores.json?t='+Date.now());
+    if(!res.ok) throw new Error('scores.json '+res.status);
+    const d=await res.json();
+    apiMatches=d.matches||[];
+    apiStandings=d.standings||[];
+    apiScorers=d.scorers||[];
+    lastUpdated=d.lastUpdated?new Date(d.lastUpdated):new Date();
     anyLive=apiMatches.some(m=>m.status==='IN_PLAY'||m.status==='PAUSED');
     renderAll();
     scheduleRefresh();
   }catch(e){
-    console.warn('API error',e);
-    setTimeout(fetchAll,30000);
+    console.warn('Could not load scores.json:',e);
+    setTimeout(fetchAll,60000);
   }
 }
 function scheduleRefresh(){clearTimeout(window._rt);window._rt=setTimeout(fetchAll,anyLive?30000:60000);}
@@ -733,28 +743,41 @@ function renderPrizes(){
 
   const cardHTML=(p,piResolved)=>{
     let w=winners[p.id];
-    let leaderHTML='<div class="prize-leader" style="color:var(--muted);font-size:.8rem">Not yet determined</div>';
+
+    // Pitch invader special
     if(p.type==='pitchinvader'){
+      let leaderHTML,winning='';
       if(piResolved){
-        const teamsList=piResolved.teams.map(t=>`${flags[t]||''} <strong>${t}</strong> (${owners[t]||'?'}) — £${piResolved.amountEach}`).join(' &amp; ');
-        leaderHTML=`<div class="prize-leader manual">${teamsList}</div><div class="prize-stat">${piResolved.stat}</div>`;
-        return `<div class="prize-card winning"><div class="prize-icon">${p.icon}</div><div class="prize-body"><div class="prize-name">${p.name}</div><div class="prize-how">${p.how}</div><div class="prize-amount">&pound;${p.amount}</div>${leaderHTML}</div></div>`;
+        const teamsList=piResolved.teams.map(t=>
+          '<span class="prize-leader-team">'+( flags[t]||'')+' <strong>'+t+'</strong><span class="prize-leader-owner">('+( owners[t]||'?')+')</span> &mdash; &pound;'+piResolved.amountEach+'</span>'
+        ).join(' <span class="prize-leader-vs">&amp;</span> ');
+        leaderHTML='<div class="prize-leader-box manual"><div class="prize-leader-label">&#127942; Current leader</div>'+teamsList+'</div><div class="prize-stat">'+piResolved.stat+'</div>';
+        winning='winning';
       } else {
         const manual=getManual();const pi=manual['pitchinvader'];
-        const note=(!pi||pi.mode==='none')?'No invader — rolls to winner':'Not yet entered';
-        leaderHTML=`<div class="prize-leader" style="color:var(--muted);font-size:.8rem">${note}</div>`;
-        return `<div class="prize-card"><div class="prize-icon">${p.icon}</div><div class="prize-body"><div class="prize-name">${p.name}</div><div class="prize-how">${p.how}</div><div class="prize-amount">&pound;${p.amount}</div>${leaderHTML}</div></div>`;
+        const note=(!pi||pi.mode==='none')?'Rolls to winner if no invader occurs':'Not yet entered';
+        leaderHTML='<div class="prize-leader-box pending"><div class="prize-leader-label">&#9203; Pending</div><span class="prize-pending-note">'+note+'</span></div>';
       }
+      return '<div class="prize-card '+winning+'"><div class="prize-icon">'+p.icon+'</div><div class="prize-body"><div class="prize-name">'+p.name+'</div><div class="prize-how">'+p.how+'</div><div class="prize-amount">&pound;'+p.amount+'</div>'+leaderHTML+'</div></div>';
     }
+
+    // Standard prize
+    let leaderHTML, winning='';
     if(w){
       const baseAmt=p.id==='winner'&&w.pitchinvaderBonus?p.amount+10:p.amount;
-      const teamsList=w.teams.map(t=>`${flags[t]||''} <strong>${t}</strong> (${owners[t]||'?'})`).join(', ');
-      leaderHTML=`<div class="prize-leader ${p.type}">${teamsList}</div>`;
-      if(w.stat)leaderHTML+=`<div class="prize-stat">${w.stat}</div>`;
-      const winning=w?'winning':'';
-      return `<div class="prize-card ${winning}"><div class="prize-icon">${p.icon}</div><div class="prize-body"><div class="prize-name">${p.name}</div><div class="prize-how">${p.how}</div><div class="prize-amount">&pound;${baseAmt}</div>${leaderHTML}</div></div>`;
+      const teamsList=w.teams.map(t=>
+        '<span class="prize-leader-team">'+(flags[t]||'')+' <strong>'+t+'</strong><span class="prize-leader-owner">('+( owners[t]||'?')+')</span></span>'
+      ).join(' <span class="prize-leader-vs">and</span> ');
+      const src=w.source==='manual'?'&#9998; Manual':'&#128225; Live';
+      leaderHTML='<div class="prize-leader-box '+(w.source==='manual'?'manual':'auto')+'"><div class="prize-leader-label">&#127942; Current leader <span class="prize-src-badge">'+src+'</span></div>'+teamsList+'</div>';
+      if(w.stat)leaderHTML+='<div class="prize-stat">'+w.stat+'</div>';
+      winning='winning';
+    } else {
+      const isPitchRollup=p.id==='winner'&&(!getManual()['pitchinvader']||getManual()['pitchinvader'].mode==='none');
+      leaderHTML='<div class="prize-leader-box pending"><div class="prize-leader-label">&#9203; Pending</div><span class="prize-pending-note">'+(isPitchRollup?'Includes &pound;10 pitch invader rollup if no invader':'Not yet determined')+'</span></div>';
     }
-    return `<div class="prize-card"><div class="prize-icon">${p.icon}</div><div class="prize-body"><div class="prize-name">${p.name}</div><div class="prize-how">${p.how}</div><div class="prize-amount">&pound;${p.amount}</div>${leaderHTML}</div></div>`;
+    const dispAmt=p.id==='winner'&&w&&w.pitchinvaderBonus?p.amount+10:p.amount;
+    return '<div class="prize-card '+winning+'"><div class="prize-icon">'+p.icon+'</div><div class="prize-body"><div class="prize-name">'+p.name+'</div><div class="prize-how">'+p.how+'</div><div class="prize-amount">&pound;'+dispAmt+'</div>'+leaderHTML+'</div></div>';
   };
 
   const piResolved=resolvePitchInvader();
