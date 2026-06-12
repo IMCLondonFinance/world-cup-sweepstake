@@ -496,14 +496,16 @@ function computeAutoResults(){
     const topGoals=byGoals[0];
     results.mostGoals={team:topGoals.team,stat:`${topGoals.gf} goals scored`,tied:byGoals.filter(x=>x.gf===topGoals.gf).map(x=>x.team)};
 
-    // Most draws (group stage only) — tiebreak: most losses (conceded wins)
+    // Most draws (group stage only) — tiebreak: most losses. Only show leader if at least one draw has occurred.
     const byDraws=[...st].sort((a,b)=>b.draw-a.draw||b.lost-a.lost);
     const topDraws=byDraws[0];
-    const drawTied=byDraws.filter(x=>x.draw===topDraws.draw);
-    const drawStat=drawTied.length>1&&drawTied[0].lost===drawTied[1].lost
-      ?`${topDraws.draw} draws (tied)`
-      :`${topDraws.draw} draws${drawTied.length>1?' (tiebreak: '+topDraws.lost+' losses)':''}`;
-    results.mostDraws={team:topDraws.team,stat:drawStat};
+    if(topDraws && topDraws.draw>0){
+      const drawTied=byDraws.filter(x=>x.draw===topDraws.draw);
+      const drawStat=drawTied.length>1&&drawTied[0].lost===drawTied[1].lost
+        ?(topDraws.draw+' draws (tied)')
+        :(topDraws.draw+' draws'+(drawTied.length>1?' (tiebreak: '+topDraws.lost+' losses)':''));
+      results.mostDraws={team:topDraws.team,stat:drawStat};
+    }
 
     // Worst defence (most goals against - across all matches)
     // Use finished match data for full tournament (not just group)
@@ -533,7 +535,9 @@ function computeAutoResults(){
     });
     if(Object.keys(csMap).length>0){
       const topCS=Object.entries(csMap).sort((a,b)=>b[1]-a[1])[0];
-      results.cleanSheets={team:topCS[0],stat:`${topCS[1]} clean sheet${topCS[1]!==1?'s':''}`,tied:Object.entries(csMap).filter(x=>x[1]===topCS[1]).map(x=>x[0])};
+      if(topCS[1]>0){
+        results.cleanSheets={team:topCS[0],stat:topCS[1]+' clean sheet'+(topCS[1]!==1?'s':''),tied:Object.entries(csMap).filter(x=>x[1]===topCS[1]).map(x=>x[0])};
+      }
     }
 
     // Wooden spoon — worst group stage record
