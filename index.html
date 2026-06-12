@@ -519,8 +519,12 @@ function computeAutoResults(){
       if(!gaMap[a])gaMap[a]=0; gaMap[a]+=hs;
     });
     if(Object.keys(gaMap).length>0){
-      const worstDef=Object.entries(gaMap).sort((a,b)=>b[1]-a[1])[0];
-      results.worstDefence={team:worstDef[0],stat:`${worstDef[1]} goals conceded`};
+      const sortedGA=Object.entries(gaMap).sort((a,b)=>b[1]-a[1]);
+      const topGA=sortedGA[0][1];
+      if(topGA>0){
+        const tied=sortedGA.filter(x=>x[1]===topGA).map(x=>x[0]);
+        results.worstDefence={team:tied[0],stat:topGA+' goals conceded'+(tied.length>1?' ('+tied.length+' teams tied)':''),tied:tied};
+      }
     }
 
     // Clean sheets (across all matches)
