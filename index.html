@@ -422,7 +422,20 @@ let anyLive=false;
 
 // ── MANUAL OVERRIDES (localStorage) ─────────────────────────────
 const MANUAL_KEY='wc2026_manual_v2';
-function getManual(){try{return JSON.parse(localStorage.getItem(MANUAL_KEY)||'{}')}catch(e){return{}}}
+function getManual(){
+  try{
+    const stored=JSON.parse(localStorage.getItem(MANUAL_KEY)||'{}');
+    // Hardcoded known results — override any stored value
+    const known={
+      'mostyellow':'Paraguay',
+      'mostred':'South Africa',
+      'goldboot':'USA'
+    };
+    return Object.assign({},stored,known);
+  }catch(e){
+    return{'mostyellow':'Paraguay','mostred':'South Africa','goldboot':'USA'};
+  }
+}
 function setManual(id,val){const m=getManual();if(val!==null&&val!==undefined&&val!=='')m[id]=val;else delete m[id];localStorage.setItem(MANUAL_KEY,JSON.stringify(m));}
 
 // ── FETCH ────────────────────────────────────────────────────────
