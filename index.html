@@ -429,7 +429,9 @@ function getManual(){
     const known={
       'mostyellow':'Paraguay',
       'mostred':'South Africa',
-      'goldboot':'USA'
+      'goldboot':'USA',
+      'pensconceded':['Qatar','Curaçao'],
+      'owngoal':['Paraguay','Switzerland','Egypt']
     };
     return Object.assign({},stored,known);
   }catch(e){
@@ -642,7 +644,9 @@ function getPrizeWinners(){
       out['pitchinvader']=pi||null; // stored as {mode,team1,team2} or null
     } else {
       const t=manual[p.id];
-      out[p.id]=t?{teams:[t],stat:'Manually entered',source:'manual'}:null;
+      if(!t) { out[p.id]=null; }
+      else if(Array.isArray(t)) { out[p.id]={teams:t,stat:'Tied — prize split equally',source:'manual'}; }
+      else { out[p.id]={teams:[t],stat:'Manually entered',source:'manual'}; }
     }
   });
 
