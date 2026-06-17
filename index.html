@@ -429,14 +429,14 @@ function getManual(){
     const known={
       'mostyellow':'Paraguay',
       'mostred':'South Africa',
-      'goldboot':'USA',
+      'goldboot':'Argentina',
       'pensconceded':['Qatar','Curaçao'],
       'owngoal':['Paraguay','Switzerland','Egypt'],
       'mostpen':['Germany','Switzerland']
     };
     return Object.assign({},stored,known);
   }catch(e){
-    return{'mostyellow':'Paraguay','mostred':'South Africa','goldboot':'USA'};
+    return{'mostyellow':'Paraguay','mostred':'South Africa','goldboot':'Argentina'};
   }
 }
 function setManual(id,val){const m=getManual();if(val!==null&&val!==undefined&&val!=='')m[id]=val;else delete m[id];localStorage.setItem(MANUAL_KEY,JSON.stringify(m));}
