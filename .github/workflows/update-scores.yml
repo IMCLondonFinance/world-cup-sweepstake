@@ -2,8 +2,8 @@ name: Update Scores
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # every 5 minutes
-  workflow_dispatch:          # allow manual trigger
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
   update:
@@ -37,7 +37,7 @@ jobs:
               scorers   = fetch(f'{base}/competitions/WC/scorers?season=2026&limit=20')
 
               output = {
-                  'lastUpdated': datetime.datetime.utcnow().isoformat() + 'Z',
+                  'lastUpdated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                   'matches':     matches.get('matches', []),
                   'standings':   standings.get('standings', []),
                   'scorers':     scorers.get('scorers', []),
@@ -46,11 +46,12 @@ jobs:
               with open('scores.json', 'w') as f:
                   json.dump(output, f)
 
-              print(f"Wrote scores.json: {len(output['matches'])} matches, {len(output['standings'])} standing groups")
+              finished = sum(1 for m in output['matches'] if m['status'] == 'FINISHED')
+              live     = sum(1 for m in output['matches'] if m['status'] in ('IN_PLAY', 'PAUSED'))
+              print(f"scores.json updated: {finished} finished, {live} live")
 
           except Exception as e:
-              print(f'Error fetching data: {e}')
-              # Don't fail the action — keep existing scores.json
+              print(f'Error: {e}')
               import sys; sys.exit(0)
           PYEOF
 
@@ -60,7 +61,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add scores.json
           if git diff --staged --quiet; then
-            echo "No changes to scores.json"
+            echo "No changes"
           else
             git commit -m "Update scores $(date -u '+%Y-%m-%d %H:%M UTC')"
             git push
