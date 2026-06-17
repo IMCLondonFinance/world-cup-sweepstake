@@ -16,60 +16,80 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Fetch scores from football-data.org
+      - name: Fetch and push scores
         env:
           API_TOKEN: ${{ secrets.FOOTBALL_API_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
           python3 << 'PYEOF'
-          import urllib.request, json, os, datetime
+          import urllib.request, urllib.error, json, os, datetime, base64
 
-          token = os.environ['API_TOKEN']
-          base  = 'https://api.football-data.org/v4'
-          headers = {'X-Auth-Token': token}
+          # ── football-data.org ──────────────────────────────────────
+          api_token = os.environ['API_TOKEN']
+          base = 'https://api.football-data.org/v4'
 
-          def fetch(url):
-              req = urllib.request.Request(url, headers=headers)
+          def fetch_api(url):
+              req = urllib.request.Request(url, headers={'X-Auth-Token': api_token})
               with urllib.request.urlopen(req, timeout=15) as r:
                   return json.loads(r.read())
 
           try:
-              matches   = fetch(f'{base}/competitions/WC/matches?season=2026')
-              standings = fetch(f'{base}/competitions/WC/standings?season=2026')
-              scorers   = fetch(f'{base}/competitions/WC/scorers?season=2026&limit=20')
-
-              output = {
-                  'lastUpdated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                  'matches':     matches.get('matches', []),
-                  'standings':   standings.get('standings', []),
-                  'scorers':     scorers.get('scorers', []),
-              }
-
-              with open('scores.json', 'w') as f:
-                  json.dump(output, f)
-
-              finished = sum(1 for m in output['matches'] if m['status'] == 'FINISHED')
-              live     = sum(1 for m in output['matches'] if m['status'] in ('IN_PLAY', 'PAUSED'))
-              print(f"scores.json updated: {finished} finished, {live} live")
-
+              matches   = fetch_api(f'{base}/competitions/WC/matches?season=2026')
+              standings = fetch_api(f'{base}/competitions/WC/standings?season=2026')
+              scorers   = fetch_api(f'{base}/competitions/WC/scorers?season=2026&limit=20')
           except Exception as e:
-              print(f'Error fetching: {e}')
-          PYEOF
+              print(f'Failed to fetch from API: {e}')
+              exit(0)
 
-      - name: Commit and push if changed
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add scores.json
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git stash
-            git push origin main || true
-            git stash pop
-            git add scores.json
-            git commit -m "Update scores $(date -u '+%Y-%m-%d %H:%M UTC')"
-            git push origin main
-          fi
+          output = {
+              'lastUpdated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              'matches':     matches.get('matches', []),
+              'standings':   standings.get('standings', []),
+              'scorers':     scorers.get('scorers', []),
+          }
+          content = json.dumps(output)
+          finished = sum(1 for m in output['matches'] if m['status'] == 'FINISHED')
+          live     = sum(1 for m in output['matches'] if m['status'] in ('IN_PLAY','PAUSED'))
+          print(f'Fetched: {finished} finished, {live} live')
+
+          # ── GitHub API — get current file SHA ─────────────────────
+          gh_token = os.environ['GITHUB_TOKEN']
+          repo     = os.environ['REPO']
+          gh_url   = f'https://api.github.com/repos/{repo}/contents/scores.json'
+          gh_headers = {
+              'Authorization': f'Bearer {gh_token}',
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+          }
+
+          # Get existing SHA (needed to update)
+          try:
+              req = urllib.request.Request(gh_url, headers=gh_headers)
+              with urllib.request.urlopen(req) as r:
+                  file_info = json.loads(r.read())
+              sha = file_info['sha']
+              print(f'Got existing SHA: {sha[:8]}')
+          except Exception as e:
+              print(f'Could not get file SHA: {e}')
+              sha = None
+
+          # Push via GitHub API (atomic — no git conflicts possible)
+          now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+          payload = {
+              'message': f'Update scores {now}',
+              'content': base64.b64encode(content.encode()).decode(),
+          }
+          if sha:
+              payload['sha'] = sha
+
+          try:
+              data = json.dumps(payload).encode()
+              req = urllib.request.Request(gh_url, data=data, headers={**gh_headers, 'Content-Type':'application/json'}, method='PUT')
+              with urllib.request.urlopen(req) as r:
+                  print(f'scores.json updated successfully')
+          except urllib.error.HTTPError as e:
+              print(f'GitHub API error {e.code}: {e.read().decode()}')
+          except Exception as e:
+              print(f'Push error: {e}')
+          PYEOF
