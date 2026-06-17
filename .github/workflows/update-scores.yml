@@ -67,7 +67,7 @@ jobs:
             echo "No changes to commit"
           else
             git stash
-            git pull --rebase origin main
+            git push origin main || true
             git stash pop
             git add scores.json
             git commit -m "Update scores $(date -u '+%Y-%m-%d %H:%M UTC')"
