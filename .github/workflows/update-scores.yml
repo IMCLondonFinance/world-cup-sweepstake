@@ -52,7 +52,6 @@ jobs:
 
           except Exception as e:
               print(f'Error: {e}')
-              import sys; sys.exit(0)
           PYEOF
 
       - name: Commit and push if changed
@@ -64,5 +63,6 @@ jobs:
             echo "No changes"
           else
             git commit -m "Update scores $(date -u '+%Y-%m-%d %H:%M UTC')"
-            git push
+            git pull --rebase origin main
+            git push origin main
           fi
