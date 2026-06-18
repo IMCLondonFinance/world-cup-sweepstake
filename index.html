@@ -202,6 +202,7 @@ select:focus{border-color:var(--green)}
     <button onclick="showSection('prizes',this)">🎁 Prizes</button>
     <button onclick="showSection('fixtures',this)">📅 Fixtures</button>
     <button onclick="showSection('today',this)">⚽ Today</button>
+    <button onclick="showSection('groups',this)">📊 Groups</button>
     <button onclick="showSection('participants',this)">🗂 Teams</button>
     <button onclick="showSection('myteam',this)">👤 By Owner</button>
   </div>
@@ -231,6 +232,13 @@ select:focus{border-color:var(--green)}
 <section id="today" class="section">
   <div class="section-title">⚽ Today's Matches</div>
   <div id="today-content"></div>
+</section>
+
+<!-- GROUPS -->
+<section id="groups" class="section">
+  <div class="section-title">📊 Group Tables</div>
+  <div class="api-status" id="groups-status"></div>
+  <div id="groups-container"><div class="no-games"><div class="icon">📡</div><p>Loading group tables…</p></div></div>
 </section>
 
 <!-- PARTICIPANTS -->
@@ -962,10 +970,87 @@ function showSection(id,btn){
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('visible');
   btn.classList.add('active');
+  if(id==='groups')renderGroups();
   if(id==='leaderboard')renderLeaderboard();
   if(id==='prizes')renderPrizes();
   if(id==='fixtures')renderFixtures();
   if(id==='today')renderToday();
+}
+
+// ── GROUP TABLES ─────────────────────────────────────────────────
+function renderGroups(){
+  const container=document.getElementById('groups-container');
+  const statusEl=document.getElementById('groups-status');
+  if(!container)return;
+
+  // Build lookup from standings: normName -> row
+  const standingsMap={};
+  const total=apiStandings.find(s=>s.type==='TOTAL');
+  if(total){
+    total.table.forEach(row=>{
+      const t=norm(row.team.shortName||row.team.name||'');
+      standingsMap[t]=row;
+    });
+  }
+
+  const t=lastUpdated?'Updated <b>'+lastUpdated.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'</b>':'Loading…';
+  if(statusEl)statusEl.innerHTML=t;
+
+  if(Object.keys(standingsMap).length===0){
+    container.innerHTML='<div class="no-games"><div class="icon">⏳</div><p>Standings will appear once matches are played.</p></div>';
+    return;
+  }
+
+  let html='<div class="groups-grid">';
+
+  Object.entries(groups).forEach(([g,teams])=>{
+    // Build group standing rows
+    const rows=teams.map(team=>{
+      const s=standingsMap[team];
+      if(!s)return{team,played:0,won:0,draw:0,lost:0,gf:0,ga:0,gd:0,points:0,form:''};
+      return{
+        team,
+        played:s.playedGames,
+        won:s.won,draw:s.draw,lost:s.lost,
+        gf:s.goalsFor,ga:s.goalsAgainst,gd:s.goalDifference,
+        points:s.points,
+        form:s.form||''
+      };
+    }).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf);
+
+    html+='<div class="group-table-card">';
+    html+='<div class="group-table-header">Group '+g+'<span>'+teams.map(t=>flags[t]||'').join(' ')+'</span></div>';
+    html+='<table><thead><tr>';
+    html+='<th class="left" style="width:20px">#</th>';
+    html+='<th class="left">Team</th>';
+    html+='<th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th>';
+    html+='</tr></thead><tbody>';
+
+    rows.forEach((row,i)=>{
+      const qualify=i<2?' qualify':'';
+      const qualifyLine=i===1?'qualify-line':'';
+      const formPills=(row.form||'').split('').slice(-3).map(f=>'<div class="gt-form-pill '+f+'">'+f+'</div>').join('');
+      html+='<tr class="'+qualifyLine+'">';
+      html+='<td class="gt-pos'+qualify+'">'+(i+1)+'</td>';
+      html+='<td class="left"><div class="gt-team"><span class="gt-flag">'+(flags[row.team]||'🏳')+'</span>'+row.team+'<span class="gt-owner">'+(owners[row.team]||'')+'</span></div></td>';
+      html+='<td>'+row.played+'</td>';
+      html+='<td>'+row.won+'</td>';
+      html+='<td>'+row.draw+'</td>';
+      html+='<td>'+row.lost+'</td>';
+      html+='<td>'+row.gf+'</td>';
+      html+='<td>'+row.ga+'</td>';
+      html+='<td>'+(row.gd>0?'+':'')+row.gd+'</td>';
+      html+='<td class="gt-pts">'+row.points+'</td>';
+      html+='<td><div class="gt-form">'+formPills+'</div></td>';
+      html+='</tr>';
+    });
+
+    html+='</tbody></table></div>';
+  });
+
+  html+='</div>';
+  html+='<div style="font-size:.75rem;color:var(--muted);margin-top:.5rem">🟢 Top 2 in each group qualify for the Last 32. Dashed line = qualification boundary.</div>';
+  container.innerHTML=html;
 }
 
 // ── RENDER ALL ────────────────────────────────────────────────────
@@ -974,6 +1059,7 @@ function renderAll(){
   renderPrizes();
   renderFixtures();
   renderToday();
+  renderGroups();
   const sel=document.getElementById('owner-select');
   if(sel&&sel.value)renderOwnerView(sel.value);
 }
