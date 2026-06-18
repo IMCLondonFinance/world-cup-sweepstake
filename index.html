@@ -178,6 +178,36 @@ select:focus{border-color:var(--green)}
   .team-name{font-size:.82rem}.team-owner-small{font-size:.65rem}
   .prizes-grid{grid-template-columns:1fr}
 }
+
+  /* GROUP TABLES */
+  .groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:1.5rem;margin-bottom:2rem}
+  .group-table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .group-table-header{background:var(--green-dark);color:#fff;padding:.7rem 1.1rem;font-family:"Bebas Neue",sans-serif;font-size:1.2rem;letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center}
+  .gh-flags{display:flex;gap:4px;font-size:1.1rem}
+  .group-table-card table{width:100%;border-collapse:collapse;table-layout:fixed}
+  .group-table-card thead th{background:#f8f6f1;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:.45rem .5rem;text-align:center;border-bottom:2px solid var(--border)}
+  .th-team{text-align:left !important;width:44%}
+  .th-num{width:7%}
+  .th-pts{width:8%;color:var(--green-dark) !important}
+  .th-form{width:13%;text-align:left !important}
+  .group-table-card tbody td{padding:.55rem .5rem;font-size:.82rem;text-align:center;border-bottom:1px solid #f0ece4;vertical-align:middle}
+  .td-team{text-align:left !important}
+  .group-table-card tbody tr:last-child td{border-bottom:none}
+  .group-table-card tbody tr:hover td{background:#fafaf7}
+  .group-table-card tbody tr.qualifying{background:#f0f9f4}
+  .qualify-border td{border-top:2px solid var(--green) !important}
+  .gt-pos{font-family:"Bebas Neue",sans-serif;font-size:.95rem;color:var(--muted);display:inline-block;width:16px;text-align:center}
+  .gt-pos.qualify{color:var(--green-dark)}
+  .gt-team-wrap{display:flex;flex-direction:column;gap:1px}
+  .gt-team-name{display:flex;align-items:center;gap:.35rem;font-weight:600;font-size:.83rem}
+  .gt-flag{font-size:.95rem;flex-shrink:0}
+  .gt-owner{font-size:.68rem;color:var(--muted);padding-left:1.6rem}
+  .gt-pts{font-family:"Bebas Neue",sans-serif;font-size:1.1rem;color:var(--green-dark)}
+  .gt-form{display:flex;gap:2px}
+  .gt-form-pill{width:17px;height:17px;border-radius:3px;font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff}
+  .gt-form-pill.W{background:var(--green)}
+  .gt-form-pill.D{background:var(--gold)}
+  .gt-form-pill.L{background:var(--red)}
 </style>
 </head>
 <body>
@@ -1019,27 +1049,27 @@ function renderGroups(){
     }).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf);
 
     html+='<div class="group-table-card">';
-    html+='<div class="group-table-header">Group '+g+'<span>'+teams.map(t=>flags[t]||'').join(' ')+'</span></div>';
+    html+='<div class="group-table-header">GROUP '+g+'<div class="gh-flags">'+teams.map(t=>flags[t]||'').join('')+'</div></div>';
     html+='<table><thead><tr>';
-    html+='<th class="left" style="width:20px">#</th>';
-    html+='<th class="left">Team</th>';
-    html+='<th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th>';
+    html+='<th class="th-team">#&nbsp;&nbsp;Team</th>';
+    html+='<th class="th-num">P</th><th class="th-num">W</th><th class="th-num">D</th><th class="th-num">L</th>';
+    html+='<th class="th-num">GF</th><th class="th-num">GA</th><th class="th-num">GD</th>';
+    html+='<th class="th-pts">Pts</th><th class="th-form">Form</th>';
     html+='</tr></thead><tbody>';
 
     rows.forEach((row,i)=>{
-      const qualify=i<2?' qualify':'';
-      const qualifyLine=i===1?'qualify-line':'';
+      const isQualify=i<2;
+      const isBorder=i===2;
       const formPills=(row.form||'').split('').slice(-3).map(f=>'<div class="gt-form-pill '+f+'">'+f+'</div>').join('');
-      html+='<tr class="'+qualifyLine+'">';
-      html+='<td class="gt-pos'+qualify+'">'+(i+1)+'</td>';
-      html+='<td class="left"><div class="gt-team"><span class="gt-flag">'+(flags[row.team]||'🏳')+'</span>'+row.team+'<span class="gt-owner">'+(owners[row.team]||'')+'</span></div></td>';
-      html+='<td>'+row.played+'</td>';
-      html+='<td>'+row.won+'</td>';
-      html+='<td>'+row.draw+'</td>';
-      html+='<td>'+row.lost+'</td>';
-      html+='<td>'+row.gf+'</td>';
-      html+='<td>'+row.ga+'</td>';
-      html+='<td>'+(row.gd>0?'+':'')+row.gd+'</td>';
+      const gd=(row.gd>0?'+':'')+row.gd;
+      html+='<tr class="'+(isBorder?'qualify-border':'')+(isQualify?' qualifying':'')+'">';
+      html+='<td class="td-team"><div class="gt-team-wrap">';
+      html+='<div class="gt-team-name"><span class="gt-flag">'+(flags[row.team]||'🏳')+'</span>';
+      html+='<span class="gt-pos'+(isQualify?' qualify':'')+'">'+(i+1)+'</span> '+row.team+'</div>';
+      html+='<div class="gt-owner">'+(owners[row.team]||'')+'</div>';
+      html+='</div></td>';
+      html+='<td>'+row.played+'</td><td>'+row.won+'</td><td>'+row.draw+'</td><td>'+row.lost+'</td>';
+      html+='<td>'+row.gf+'</td><td>'+row.ga+'</td><td>'+gd+'</td>';
       html+='<td class="gt-pts">'+row.points+'</td>';
       html+='<td><div class="gt-form">'+formPills+'</div></td>';
       html+='</tr>';
