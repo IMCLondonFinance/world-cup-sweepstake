@@ -608,34 +608,38 @@ function computeAutoResults(){
 
   // Biggest win / loss
   if(finished.length>0){
-    let bigWin={margin:0,team:'',stat:''};
-    let bigLoss={margin:0,team:'',stat:''};
-    let firstOut={team:'',date:new Date('2099-01-01'),gf:999};
+    let topMargin=0;
+    let bigWinners=[];
+    let bigLosers=[];
 
     finished.forEach(m=>{
       const h=norm(m.homeTeam?.shortName||m.homeTeam?.name||'');
       const a=norm(m.awayTeam?.shortName||m.awayTeam?.name||'');
       const hs=m.score?.fullTime?.home??0;
       const as_=m.score?.fullTime?.away??0;
+      if(hs===as_)return; // skip draws
       const margin=Math.abs(hs-as_);
-      const mDate=new Date(m.utcDate);
-
-      if(margin>bigWin.margin){
-        const winner=hs>as_?h:a;
-        const loser=hs>as_?a:h;
-        const ws=hs>as_?hs:as_; const ls=hs>as_?as_:hs;
-        bigWin={margin,team:winner,stat:`Beat ${loser} ${ws}-${ls}`};
-        bigLoss={margin,team:loser,stat:`Lost to ${winner} ${ls}-${ws}`};
-      }
-
-      // Earliest exit — group stage losers (teams that finished bottom with most losses)
-      if(m.stage==='GROUP_STAGE'&&m.score?.winner){
-        // we'll compute this from standings below
+      const winner=hs>as_?h:a;
+      const loser=hs>as_?a:h;
+      const ws=hs>as_?hs:as_; const ls=hs>as_?as_:hs;
+      if(margin>topMargin){
+        topMargin=margin;
+        bigWinners=[{team:winner,stat:'Beat '+loser+' '+ws+'-'+ls}];
+        bigLosers=[{team:loser,stat:'Lost to '+winner+' '+ls+'-'+ws}];
+      } else if(margin===topMargin){
+        bigWinners.push({team:winner,stat:'Beat '+loser+' '+ws+'-'+ls});
+        bigLosers.push({team:loser,stat:'Lost to '+winner+' '+ls+'-'+ws});
       }
     });
 
-    if(bigWin.team)results.biggestWin={team:bigWin.team,stat:bigWin.stat};
-    if(bigLoss.team)results.biggestLoss={team:bigLoss.team,stat:bigLoss.stat};
+    if(bigWinners.length>0){
+      const statStr=bigWinners.map(x=>x.stat).join(' / ');
+      results.biggestWin={team:bigWinners[0].team,stat:statStr,tied:bigWinners.map(x=>x.team)};
+    }
+    if(bigLosers.length>0){
+      const statStr=bigLosers.map(x=>x.stat).join(' / ');
+      results.biggestLoss={team:bigLosers[0].team,stat:statStr,tied:bigLosers.map(x=>x.team)};
+    }
 
     // Earliest exit: find teams eliminated (not in round of 32 / knockouts at all)
     const knockoutTeams=new Set();
