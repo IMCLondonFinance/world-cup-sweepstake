@@ -465,9 +465,9 @@ function getManual(){
     const stored=JSON.parse(localStorage.getItem(MANUAL_KEY)||'{}');
     // Hardcoded known results — override any stored value
     const known={
-      'mostyellow':'Paraguay',
-      'mostred':'South Africa',
-      'goldboot':'Argentina',
+      'mostyellow':'South Africa',
+      'mostred':['South Africa','Qatar'],
+      'goldboot':['Canada','Germany','Argentina'],
       'pensconceded':['Qatar','Curaçao'],
       'owngoal':['Paraguay','Switzerland','Egypt'],
       'mostpen':['Germany','Switzerland']
