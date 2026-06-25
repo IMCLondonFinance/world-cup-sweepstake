@@ -1234,16 +1234,17 @@ function renderBracket(){
   function roundHTML(stage,title,drawSlots,sliceA,sliceB){
     const stageMatches=apiMatches.filter(m=>m.stage===stage);
     const myMatches=stageMatches.slice(sliceA,sliceB);
+    let rhtml='<div class="bracket-round"><div class="bracket-round-title">'+title+'</div><div class="bracket-matches">';
     if(stage==='LAST_32'&&!hasKO&&drawSlots){
-      drawSlots.forEach(([h,a,d])=>{ html+=predictedCard(h,a,d); });
+      drawSlots.forEach(([h,a,d])=>{ rhtml+=predictedCard(h,a,d); });
     } else if(myMatches.length>0){
-      myMatches.forEach(m=>{ html+=apiCard(m); });
+      myMatches.forEach(m=>{ rhtml+=apiCard(m); });
     } else {
       const n=drawSlots?drawSlots.length:(stage==='LAST_16'?4:stage==='QUARTER_FINALS'?2:1);
-      for(let i=0;i<n;i++) html+=tbdCard();
+      for(let i=0;i<n;i++) rhtml+=tbdCard();
     }
-    html+='</div></div>';
-    return html;
+    rhtml+='</div></div>';
+    return rhtml;
   }
 
   // Official Last 32 draw — left 8 and right 8 feeding into centre
