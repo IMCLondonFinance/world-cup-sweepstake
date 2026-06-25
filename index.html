@@ -1265,39 +1265,54 @@ function renderBracket(){
   const isDoneFinal=finalMatch&&finalMatch.status==='FINISHED';
   const isLiveFinal=finalMatch&&(finalMatch.status==='IN_PLAY'||finalMatch.status==='PAUSED');
 
+  let centerHTML='<div class="bracket-center">';
+  centerHTML+='<div class="final-match-card"><div class="final-title">&#127942; Final &middot; 19 Jul</div>';
   if(finalMatch&&(isDoneFinal||isLiveFinal)){
-    const h=norm((finalMatch.homeTeam&&(finalMatch.homeTeam.shortName||finalMatch.homeTeam.name))||'');
-    const a=norm((finalMatch.awayTeam&&(finalMatch.awayTeam.shortName||finalMatch.awayTeam.name))||'');
-    const hs=finalMatch.score.fullTime.home,as_=finalMatch.score.fullTime.away;
-    centerHTML+=teamRow(h,isDoneFinal?hs:null,isDoneFinal&&hs>as_,isLiveFinal,null,false);
-    centerHTML+=teamRow(a,isDoneFinal?as_:null,isDoneFinal&&as_>hs,isLiveFinal,null,false);
+    const fh=norm((finalMatch.homeTeam&&(finalMatch.homeTeam.shortName||finalMatch.homeTeam.name))||'');
+    const fa=norm((finalMatch.awayTeam&&(finalMatch.awayTeam.shortName||finalMatch.awayTeam.name))||'');
+    const fhs=finalMatch.score.fullTime.home;
+    const fas=finalMatch.score.fullTime.away;
+    centerHTML+=teamRow(fh,isDoneFinal?fhs:null,isDoneFinal&&fhs>fas,isLiveFinal,null,false);
+    centerHTML+=teamRow(fa,isDoneFinal?fas:null,isDoneFinal&&fas>fhs,isLiveFinal,null,false);
   } else {
+    centerHTML+='<div class="bracket-tbd-slot">TBD</div><div class="bracket-tbd-slot">TBD</div>';
   }
   centerHTML+='</div>';
 
   if(isDoneFinal){
-    const h=norm((finalMatch.homeTeam&&(finalMatch.homeTeam.shortName||finalMatch.homeTeam.name))||'');
-    const a=norm((finalMatch.awayTeam&&(finalMatch.awayTeam.shortName||finalMatch.awayTeam.name))||'');
-    const hs=finalMatch.score.fullTime.home??0,as_=finalMatch.score.fullTime.away??0;
-    const champ=hs>as_?h:a;
+    const fh=norm((finalMatch.homeTeam&&(finalMatch.homeTeam.shortName||finalMatch.homeTeam.name))||'');
+    const fa=norm((finalMatch.awayTeam&&(finalMatch.awayTeam.shortName||finalMatch.awayTeam.name))||'');
+    const fhs=finalMatch.score.fullTime.home??0;
+    const fas=finalMatch.score.fullTime.away??0;
+    const champ=fhs>fas?fh:fa;
+    centerHTML+='<div class="champion-card"><div class="champion-label">&#127942; Champion</div>'
+      +'<div class="champion-flag">'+(flags[champ]||'')+'</div>'
+      +'<div class="champion-name">'+champ+'</div>'
+      +'<div class="champion-owner">'+(owners[champ]||'')+'</div></div>';
   } else {
+    centerHTML+='<div class="champion-card"><div class="champion-label">Champion</div>'
+      +'<div class="champion-flag">&#127942;</div>'
+      +'<div class="champion-name" style="color:var(--muted);font-size:.85rem">To be decided</div></div>';
   }
   centerHTML+='</div>';
 
-  // Assemble: LEFT (L32->L16->QF->SF) | CENTRE (Final+Champion) | RIGHT (SF->QF->L16->L32)
+  // Assemble: LEFT (L32->L16->QF->SF) | CENTRE | RIGHT (SF->QF->L16->L32)
+  let html='<div class="bracket-wrap"><div class="bracket-outer">';
+  html+='<div class="bracket-side left">';
   html+=roundHTML('LAST_32','Last 32',leftDraw,0,8);
   html+=roundHTML('LAST_16','Last 16',null,0,4);
   html+=roundHTML('QUARTER_FINALS','QF',null,0,2);
   html+=roundHTML('SEMI_FINALS','SF',null,0,1);
   html+='</div>';
   html+=centerHTML;
+  html+='<div class="bracket-side right">';
   html+=roundHTML('SEMI_FINALS','SF',null,1,2);
   html+=roundHTML('QUARTER_FINALS','QF',null,2,4);
   html+=roundHTML('LAST_16','Last 16',null,4,8);
   html+=roundHTML('LAST_32','Last 32',rightDraw,8,16);
   html+='</div>';
-  html+='</div>';
-  html+='</div>';
+  html+='</div></div>';
+  if(!hasKO)html+='<div class="bracket-note">* Predicted from current standings &mdash; dashed border = not yet confirmed.</div>';
   container.innerHTML=html;
 }
 
