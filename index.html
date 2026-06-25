@@ -1182,13 +1182,6 @@ function renderBracket(){
   const statusEl=document.getElementById('bracket-status');
   if(statusEl)statusEl.innerHTML=t;
 
-  // If no data yet, show loading and retry
-  if(apiMatches.length===0){
-    container.innerHTML='<div class="no-games"><div class="icon">📡</div><p>Loading bracket data...</p></div>';
-    setTimeout(renderBracket, 2000);
-    return;
-  }
-
   // Build group position lookup: 'A1','A2' etc -> {team, points, played...}
   const groupPos={};
   const total=apiStandings.find(s=>s.type==='TOTAL');
@@ -1199,7 +1192,8 @@ function renderBracket(){
       if(!row)return{team,points:0,gd:0,gf:0,played:0};
       return{team,points:row.points,gd:row.goalDifference,gf:row.goalsFor,played:row.playedGames};
     }).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf);
-    rows.forEach((r,i)=>{ groupPos[g+(i+1)]=r; });
+    // If no standings data, just use original group order as placeholder
+    rows.forEach((r,i)=>{ groupPos[g+(i+1)]=r.played!==undefined?r:{team:teams[i]||'',points:0,gd:0,gf:0,played:0}; });
   });
 
   const koMatches=apiMatches.filter(m=>m.stage!=='GROUP_STAGE');
