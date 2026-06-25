@@ -208,6 +208,31 @@ select:focus{border-color:var(--green)}
   .gt-form-pill.W{background:var(--green)}
   .gt-form-pill.D{background:var(--gold)}
   .gt-form-pill.L{background:var(--red)}
+
+  /* BRACKET */
+  .bracket-wrap{overflow-x:auto;padding-bottom:1rem}
+  .bracket{display:flex;gap:0;align-items:stretch;min-width:900px}
+  .bracket-round{display:flex;flex-direction:column;flex:1;min-width:160px}
+  .bracket-round-title{font-family:"Bebas Neue",sans-serif;font-size:.85rem;letter-spacing:.08em;color:#fff;background:var(--green-dark);text-align:center;padding:.4rem .5rem;border-right:1px solid rgba(255,255,255,.15)}
+  .bracket-round-title.champion{background:var(--gold)}
+  .bracket-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:.5rem 0;border-right:1px solid var(--border)}
+  .bracket-match{margin:.3rem .4rem;background:var(--card);border:1px solid var(--border);border-radius:7px;overflow:hidden;position:relative}
+  .bracket-match.live{border-color:var(--red);box-shadow:0 0 0 2px rgba(204,37,41,.15)}
+  .bracket-team{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;font-size:.78rem;border-bottom:1px solid var(--border)}
+  .bracket-team:last-child{border-bottom:none}
+  .bracket-team.winner{background:var(--green-light);font-weight:700}
+  .bracket-team.tbd{color:var(--muted);font-style:italic}
+  .bracket-team-flag{font-size:.85rem;flex-shrink:0}
+  .bracket-team-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+  .bracket-team-owner{font-size:.65rem;color:var(--muted);white-space:nowrap}
+  .bracket-score{font-family:"Bebas Neue",sans-serif;font-size:.95rem;color:var(--green-dark);min-width:22px;text-align:right;flex-shrink:0}
+  .bracket-score.live{color:var(--red)}
+  .champion-card{background:var(--gold-light);border:2px solid var(--gold);border-radius:12px;padding:1.5rem;text-align:center;margin:.5rem}
+  .champion-flag{font-size:2.5rem;margin-bottom:.3rem}
+  .champion-name{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;color:var(--green-dark);letter-spacing:.05em}
+  .champion-owner{font-size:.82rem;color:var(--muted);margin-top:.2rem}
+  .bracket-tbd-slot{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;font-size:.75rem;color:var(--muted);font-style:italic;border-bottom:1px solid var(--border)}
+  .bracket-tbd-slot:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -233,6 +258,7 @@ select:focus{border-color:var(--green)}
     <button onclick="showSection('fixtures',this)">📅 Fixtures</button>
     <button onclick="showSection('today',this)">⚽ Today</button>
     <button onclick="showSection('groups',this)">📊 Groups</button>
+    <button onclick="showSection('bracket',this)">🏆 Bracket</button>
     <button onclick="showSection('participants',this)">🗂 Teams</button>
     <button onclick="showSection('myteam',this)">👤 By Owner</button>
   </div>
@@ -262,6 +288,13 @@ select:focus{border-color:var(--green)}
 <section id="today" class="section">
   <div class="section-title">⚽ Today's Matches</div>
   <div id="today-content"></div>
+</section>
+
+<!-- BRACKET -->
+<section id="bracket" class="section">
+  <div class="section-title">🏆 Knockout Bracket</div>
+  <div class="api-status" id="bracket-status"></div>
+  <div id="bracket-container"><div class="no-games"><div class="icon">📡</div><p>Loading bracket…</p></div></div>
 </section>
 
 <!-- GROUPS -->
@@ -382,6 +415,18 @@ const groups={
 };
 const teamGroup={};
 Object.entries(groups).forEach(([g,ts])=>ts.forEach(t=>teamGroup[t]=g));
+
+// Official FIFA 2026 Last 32 draw — [1st Group X, 2nd Group Y, matchDate]
+const last32Draw=[
+  ['A1','B2','28 Jun'],['C1','D2','28 Jun'],
+  ['E1','F2','29 Jun'],['G1','H2','29 Jun'],
+  ['I1','J2','29 Jun'],['K1','L2','29 Jun'],
+  ['B1','A2','30 Jun'],['D1','C2','30 Jun'],
+  ['F1','E2','30 Jun'],['H1','G2','30 Jun'],
+  ['J1','I2','1 Jul'], ['L1','K2','1 Jul'],
+  ['A3','B3','1 Jul'],['C3','D3','2 Jul'],
+  ['E3','F3','2 Jul'],['G3','H3','2 Jul'],
+];
 
 // Static schedule fallback — used before API loads
 const staticSchedule={
@@ -1005,6 +1050,7 @@ function showSection(id,btn){
   document.getElementById(id).classList.add('visible');
   btn.classList.add('active');
   if(id==='groups')renderGroups();
+  if(id==='bracket')renderBracket();
   if(id==='leaderboard')renderLeaderboard();
   if(id==='prizes')renderPrizes();
   if(id==='fixtures')renderFixtures();
@@ -1087,6 +1133,149 @@ function renderGroups(){
   container.innerHTML=html;
 }
 
+// ── BRACKET ──────────────────────────────────────────────────────
+function renderBracket(){
+  const container=document.getElementById('bracket-container');
+  if(!container)return;
+
+  const stageOrder=['LAST_32','LAST_16','QUARTER_FINALS','SEMI_FINALS','FINAL'];
+  const stageNames={'LAST_32':'Last 32','LAST_16':'Last 16','QUARTER_FINALS':'Quarter Finals','SEMI_FINALS':'Semi Finals','FINAL':'Final'};
+
+  const t=lastUpdated?'Updated <b>'+lastUpdated.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'</b>':'Loading…';
+  const statusEl=document.getElementById('bracket-status');
+  if(statusEl)statusEl.innerHTML=t;
+
+  // Build group standings lookup: 'A1' -> team name (current leader)
+  const groupPos={};
+  const total=apiStandings.find(s=>s.type==='TOTAL');
+  Object.entries(groups).forEach(([g,teams])=>{
+    const rows=teams.map(team=>{
+      if(!total)return{team,points:0,gd:0,gf:0};
+      const row=total.table.find(r=>norm(r.team.shortName||r.team.name||'')===team);
+      if(!row)return{team,points:0,gd:0,gf:0};
+      return{team,points:row.points,gd:row.goalDifference,gf:row.goalsFor,played:row.playedGames};
+    }).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf);
+    rows.forEach((r,i)=>{groupPos[g+(i+1)]=r;});
+  });
+
+  // Check if any knockout matches have real teams assigned
+  const koMatches=apiMatches.filter(m=>m.stage!=='GROUP_STAGE');
+  const hasKO=koMatches.some(m=>m.homeTeam?.shortName||m.homeTeam?.name);
+
+  function teamSlot(team, score, isWinner, isLive){
+    if(!team){
+      return '<div class="bracket-tbd-slot"><span>TBD</span></div>';
+    }
+    const flag=flags[team]||'🏳';
+    const owner=owners[team]||'';
+    const winClass=isWinner?' winner':'';
+    const scoreStr=score!==null&&score!==undefined?score:'';
+    const scoreClass=isLive?' live':'';
+    return '<div class="bracket-team'+winClass+'">'
+      +'<span class="bracket-team-flag">'+flag+'</span>'
+      +'<div style="flex:1;min-width:0"><div class="bracket-team-name">'+team+'</div>'
+      +'<div class="bracket-team-owner">'+owner+'</div></div>'
+      +'<span class="bracket-score'+scoreClass+'">'+scoreStr+'</span>'
+      +'</div>';
+  }
+
+  function matchCard(m){
+    const h=norm(m.homeTeam?.shortName||m.homeTeam?.name||'');
+    const a=norm(m.awayTeam?.shortName||m.awayTeam?.name||'');
+    const hs=m.score?.fullTime?.home;
+    const as_=m.score?.fullTime?.away;
+    const isLive=m.status==='IN_PLAY'||m.status==='PAUSED'||m.status==='HALF_TIME';
+    const isDone=m.status==='FINISHED';
+    const hWin=isDone&&hs>as_;
+    const aWin=isDone&&as_>hs;
+    const liveClass=isLive?' live':'';
+    return '<div class="bracket-match'+liveClass+'">'
+      +teamSlot(h||null,isDone||isLive?hs:null,hWin,isLive)
+      +teamSlot(a||null,isDone||isLive?as_:null,aWin,isLive)
+      +'</div>';
+  }
+
+  // Check for champion
+  const finalMatch=apiMatches.find(m=>m.stage==='FINAL'&&m.status==='FINISHED');
+  let championHTML='';
+  if(finalMatch){
+    const h=norm(finalMatch.homeTeam?.shortName||finalMatch.homeTeam?.name||'');
+    const a=norm(finalMatch.awayTeam?.shortName||finalMatch.awayTeam?.name||'');
+    const hs=finalMatch.score?.fullTime?.home??0;
+    const as_=finalMatch.score?.fullTime?.away??0;
+    const champ=hs>as_?h:a;
+    if(champ){
+      championHTML='<div class="bracket-round" style="min-width:140px">'
+        +'<div class="bracket-round-title champion">🏆 Champion</div>'
+        +'<div class="bracket-matches" style="justify-content:center">'
+        +'<div class="champion-card"><div class="champion-flag">'+(flags[champ]||'🏳')+'</div>'
+        +'<div class="champion-name">'+champ+'</div>'
+        +'<div class="champion-owner">'+(owners[champ]||'')+'</div></div>'
+        +'</div></div>';
+    }
+  }
+
+  let html='<div class="bracket-wrap"><div class="bracket">';
+
+  stageOrder.forEach(stage=>{
+    const stageMatches=apiMatches.filter(m=>m.stage===stage);
+    if(stageMatches.length===0)return;
+    html+='<div class="bracket-round">';
+    html+='<div class="bracket-round-title">'+stageNames[stage]+'</div>';
+    html+='<div class="bracket-matches">';
+
+    if(stage==='LAST_32'&&!hasKO){
+      // Show predicted teams from current standings
+      last32Draw.forEach(([slotH,slotA,date])=>{
+        const rH=groupPos[slotH];
+        const rA=groupPos[slotA];
+        const teamH=rH?rH.team:null;
+        const teamA=rA?rA.team:null;
+        const playedH=rH?rH.played:0;
+        const playedA=rA?rA.played:0;
+        const pending=playedH<3||playedA<3;
+        html+='<div class="bracket-match" style="opacity:'+(pending?.75:1)+'">';
+        // Home slot
+        if(teamH){
+          const flag=flags[teamH]||'🏳';
+          const owner=owners[teamH]||'';
+          html+='<div class="bracket-team'+(pending?' tbd':'')+'">'
+            +'<span class="bracket-team-flag">'+flag+'</span>'
+            +'<div style="flex:1;min-width:0"><div class="bracket-team-name">'+teamH+(pending?' *':'')+'</div>'
+            +'<div class="bracket-team-owner">'+owner+' &middot; '+slotH+'</div></div>'
+            +'</div>';
+        } else {
+          html+='<div class="bracket-tbd-slot"><span>'+slotH+'</span></div>';
+        }
+        // Away slot
+        if(teamA){
+          const flag=flags[teamA]||'🏳';
+          const owner=owners[teamA]||'';
+          html+='<div class="bracket-team'+(pending?' tbd':'')+'">'
+            +'<span class="bracket-team-flag">'+flag+'</span>'
+            +'<div style="flex:1;min-width:0"><div class="bracket-team-name">'+teamA+(pending?' *':'')+'</div>'
+            +'<div class="bracket-team-owner">'+owner+' &middot; '+slotA+'</div></div>'
+            +'</div>';
+        } else {
+          html+='<div class="bracket-tbd-slot"><span>'+slotA+'</span></div>';
+        }
+        html+='<div style="font-size:.6rem;color:var(--muted);padding:2px 6px;text-align:right">'+date+'</div>';
+        html+='</div>';
+      });
+    } else {
+      stageMatches.forEach(m=>{ html+=matchCard(m); });
+    }
+    html+='</div></div>';
+  });
+
+  if(championHTML)html+=championHTML;
+  html+='</div></div>';
+  if(!hasKO){
+    html+='<div style="font-size:.75rem;color:var(--muted);margin-top:.8rem">* Based on current standings — not yet confirmed. Groups with unplayed matches shown at reduced opacity.</div>';
+  }
+  container.innerHTML=html;
+}
+
 // ── RENDER ALL ────────────────────────────────────────────────────
 function renderAll(){
   renderLeaderboard();
@@ -1094,6 +1283,7 @@ function renderAll(){
   renderFixtures();
   renderToday();
   renderGroups();
+  renderBracket();
   const sel=document.getElementById('owner-select');
   if(sel&&sel.value)renderOwnerView(sel.value);
 }
