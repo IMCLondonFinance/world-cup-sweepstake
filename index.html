@@ -26,6 +26,7 @@ nav button{background:none;border:none;border-bottom:3px solid transparent;paddi
 nav button:hover{color:var(--text)}
 nav button.active{color:var(--green-dark);border-bottom-color:var(--green)}
 main{max-width:1200px;margin:0 auto;padding:2rem}
+  #bracket{max-width:100%;padding:2rem 1rem}
 .section{display:none}.section.visible{display:block}
 .section-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;color:var(--green-dark);margin-bottom:1.5rem;padding-bottom:.6rem;border-bottom:2px solid var(--green);display:flex;align-items:center;gap:.5rem}
 
@@ -209,38 +210,6 @@ select:focus{border-color:var(--green)}
   .gt-form-pill.D{background:var(--gold)}
   .gt-form-pill.L{background:var(--red)}
 
-  /* BRACKET */
-  .bracket-wrap{overflow-x:auto;padding-bottom:1.5rem;width:100%}
-  .bracket-outer{display:flex;flex-direction:row;align-items:flex-start;justify-content:center;min-width:1200px;gap:0}
-  .bracket-side{display:flex;flex-direction:row;flex:1}
-  .bracket-side.right{flex-direction:row-reverse}
-  .bracket-round{display:flex;flex-direction:column;min-width:160px;max-width:160px;border-right:1px solid var(--border)}
-  .bracket-side.right .bracket-round{border-right:none;border-left:1px solid var(--border)}
-  .bracket-round-title{font-family:'Bebas Neue',sans-serif;font-size:.78rem;letter-spacing:.08em;color:#fff;background:var(--green-dark);text-align:center;padding:.4rem .3rem}
-  .bracket-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:.4rem 3px}
-  .bracket-match{margin:.2rem 2px;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-  .bracket-match.live{border-color:var(--red)}
-  .bracket-match.predicted{border-style:dashed;opacity:.85}
-  .bracket-team{display:flex;align-items:center;gap:.3rem;padding:.3rem .4rem;font-size:.72rem;border-bottom:1px solid #f0ece4}
-  .bracket-team:last-of-type{border-bottom:none}
-  .bracket-team.winner{background:var(--green-light);font-weight:700}
-  .bracket-team-flag{font-size:.8rem;flex-shrink:0}
-  .bracket-team-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
-  .bracket-team-owner{font-size:.58rem;color:var(--muted)}
-  .bracket-score{font-family:'Bebas Neue',sans-serif;font-size:.88rem;color:var(--green-dark);min-width:16px;text-align:right;flex-shrink:0}
-  .bracket-score.live{color:var(--red)}
-  .bracket-tbd-slot{display:flex;align-items:center;padding:.3rem .4rem;font-size:.68rem;color:var(--muted);font-style:italic;border-bottom:1px solid #f0ece4}
-  .bracket-tbd-slot:last-of-type{border-bottom:none}
-  .bracket-match-date{font-size:.58rem;color:var(--muted);padding:1px 5px;text-align:right;background:#fafaf7}
-  .bracket-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:155px;max-width:155px;padding:4px 5px;gap:.5rem}
-  .final-match-card{background:var(--card);border:2px solid var(--gold);border-radius:10px;overflow:hidden;width:100%}
-  .final-title{background:var(--gold);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:.82rem;letter-spacing:.08em;text-align:center;padding:.35rem}
-  .champion-card{background:var(--gold-light);border:2px solid var(--gold);border-radius:10px;padding:1rem .5rem;text-align:center;width:100%}
-  .champion-flag{font-size:2rem;margin-bottom:.2rem}
-  .champion-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--green-dark);letter-spacing:.04em}
-  .champion-owner{font-size:.65rem;color:var(--muted);margin-top:.2rem}
-  .champion-label{font-family:'Bebas Neue',sans-serif;font-size:.7rem;color:var(--gold);letter-spacing:.06em;margin-bottom:.3rem}
-  .bracket-note{font-size:.7rem;color:var(--muted);margin-top:.6rem;padding:.4rem .6rem;background:var(--bg);border-radius:6px;display:inline-block}
 
     /* GROUP TABLES */
   .groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:1.5rem;margin-bottom:2rem}
@@ -272,37 +241,39 @@ select:focus{border-color:var(--green)}
   .gt-form-pill.D{background:var(--gold)}
   .gt-form-pill.L{background:var(--red)}
 
+
   /* BRACKET */
-  .bracket-wrap{overflow-x:auto;padding-bottom:1rem}
-  .bracket-outer{display:flex;align-items:center;justify-content:center;gap:0;min-width:1100px}
+  #bracket{max-width:100%!important;padding:2rem 1rem}
+  .bracket-wrap{overflow-x:auto;padding-bottom:1.5rem;width:100%}
+  .bracket-outer{display:flex;flex-direction:row;align-items:flex-start;justify-content:center;min-width:1600px;gap:0}
   .bracket-side{display:flex;flex-direction:row;flex:1}
-  .bracket-side.right{flex-direction:row-reverse}
-  .bracket-round{display:flex;flex-direction:column;min-width:155px;max-width:155px}
-  .bracket-round-title{font-family:"Bebas Neue",sans-serif;font-size:.78rem;letter-spacing:.08em;color:#fff;background:var(--green-dark);text-align:center;padding:.4rem .3rem;border-bottom:1px solid rgba(255,255,255,.15)}
-  .bracket-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:.4rem 3px;border-right:1px solid var(--border)}
-  .bracket-side.right .bracket-matches{border-right:none;border-left:1px solid var(--border)}
-  .bracket-match{margin:.25rem 3px;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-  .bracket-match.live{border-color:var(--red);box-shadow:0 0 0 2px rgba(204,37,41,.1)}
-  .bracket-match.predicted{opacity:.8}
-  .bracket-team{display:flex;align-items:center;gap:.3rem;padding:.28rem .4rem;font-size:.72rem;border-bottom:1px solid #f0ece4}
-  .bracket-team:last-child{border-bottom:none}
+  .bracket-side.right{flex-direction:row}
+  .bracket-round{display:flex;flex-direction:column;min-width:190px;max-width:190px;border-right:1px solid var(--border)}
+  .bracket-round-title{font-family:'Bebas Neue',sans-serif;font-size:.82rem;letter-spacing:.08em;color:#fff;background:var(--green-dark);text-align:center;padding:.45rem .3rem}
+  .bracket-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:.4rem 3px}
+  .bracket-match{margin:.2rem 3px;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .bracket-match.live{border-color:var(--red)}
+  .bracket-match.predicted{border-style:dashed;opacity:.85}
+  .bracket-team{display:flex;align-items:center;gap:.35rem;padding:.35rem .5rem;font-size:.76rem;border-bottom:1px solid #f0ece4}
+  .bracket-team:last-of-type{border-bottom:none}
   .bracket-team.winner{background:var(--green-light);font-weight:700}
-  .bracket-team-flag{font-size:.8rem;flex-shrink:0}
-  .bracket-team-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;font-size:.72rem}
-  .bracket-team-owner{font-size:.6rem;color:var(--muted)}
-  .bracket-score{font-family:"Bebas Neue",sans-serif;font-size:.88rem;color:var(--green-dark);min-width:18px;text-align:right;flex-shrink:0}
+  .bracket-team-flag{font-size:.85rem;flex-shrink:0}
+  .bracket-team-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+  .bracket-team-owner{font-size:.62rem;color:var(--muted)}
+  .bracket-score{font-family:'Bebas Neue',sans-serif;font-size:.92rem;color:var(--green-dark);min-width:18px;text-align:right;flex-shrink:0}
   .bracket-score.live{color:var(--red)}
-  .bracket-tbd-slot{display:flex;align-items:center;gap:.3rem;padding:.28rem .4rem;font-size:.68rem;color:var(--muted);font-style:italic;border-bottom:1px solid #f0ece4}
-  .bracket-tbd-slot:last-child{border-bottom:none}
-  .bracket-match-date{font-size:.58rem;color:var(--muted);padding:1px 5px;text-align:right;background:#fafaf7}
-  .bracket-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:150px;max-width:150px;padding:0 4px}
-  .final-match-card{background:var(--card);border:2px solid var(--gold);border-radius:10px;overflow:hidden;width:100%;margin-bottom:.5rem}
-  .final-title{background:var(--gold);color:#fff;font-family:"Bebas Neue",sans-serif;font-size:.9rem;letter-spacing:.08em;text-align:center;padding:.3rem}
+  .bracket-tbd-slot{display:flex;align-items:center;padding:.35rem .5rem;font-size:.7rem;color:var(--muted);font-style:italic;border-bottom:1px solid #f0ece4}
+  .bracket-tbd-slot:last-of-type{border-bottom:none}
+  .bracket-match-date{font-size:.6rem;color:var(--muted);padding:2px 6px;text-align:right;background:#fafaf7}
+  .bracket-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:175px;max-width:175px;padding:4px 6px;gap:.5rem}
+  .final-match-card{background:var(--card);border:2px solid var(--gold);border-radius:10px;overflow:hidden;width:100%}
+  .final-title{background:var(--gold);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.08em;text-align:center;padding:.4rem}
   .champion-card{background:var(--gold-light);border:2px solid var(--gold);border-radius:10px;padding:1rem .5rem;text-align:center;width:100%}
   .champion-flag{font-size:2rem;margin-bottom:.2rem}
-  .champion-name{font-family:"Bebas Neue",sans-serif;font-size:1.1rem;color:var(--green-dark);letter-spacing:.04em}
+  .champion-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--green-dark);letter-spacing:.04em}
   .champion-owner{font-size:.68rem;color:var(--muted);margin-top:.2rem}
-  .champion-label{font-family:"Bebas Neue",sans-serif;font-size:.75rem;color:var(--gold);letter-spacing:.06em;margin-bottom:.3rem}
+  .champion-label{font-family:'Bebas Neue',sans-serif;font-size:.72rem;color:var(--gold);letter-spacing:.06em;margin-bottom:.3rem}
+  .bracket-note{font-size:.7rem;color:var(--muted);margin-top:.6rem;padding:.4rem .6rem;background:var(--bg);border-radius:6px;display:inline-block}
 </style>
 </head>
 <body>
@@ -1225,20 +1196,14 @@ function renderBracket(){
   });
 
   const koMatches=apiMatches.filter(m=>m.stage!=='GROUP_STAGE');
-  const hasKO=koMatches.some(m=>m.homeTeam&&(m.homeTeam.name||m.homeTeam.shortName));
+  const hasKO=koMatches.some(m=>m.homeTeam&&m.homeTeam.id!==null&&m.homeTeam.id!==undefined);
 
   function teamRow(team,score,isWinner,isLive,label,isPredicted){
-    if(!team)return '<div class="bracket-tbd-slot">'+(label||'TBD')+'</div>';
     const flag=flags[team]||'';
     const owner=owners[team]||'';
     const scoreStr=(score!==null&&score!==undefined)?score:'';
-    return '<div class="bracket-team'+(isWinner?' winner':'')+'">'
-      +'<span class="bracket-team-flag">'+flag+'</span>'
       +'<div style="flex:1;min-width:0">'
-      +'<div class="bracket-team-name">'+team+(isPredicted?' *':'')+'</div>'
-      +'<div class="bracket-team-owner">'+owner+(label?' &middot; '+label:'')+'</div>'
       +'</div>'
-      +(scoreStr!==''?'<span class="bracket-score'+(isLive?' live':'')+'">'+scoreStr+'</span>':'')
       +'</div>';
   }
 
@@ -1246,10 +1211,8 @@ function renderBracket(){
     const rH=groupPos[slotH],rA=groupPos[slotA];
     const tH=rH?rH.team:null,tA=rA?rA.team:null;
     const confirmed=(rH&&rH.played>=3)&&(rA&&rA.played>=3);
-    return '<div class="bracket-match predicted">'
       +teamRow(tH,null,false,false,slotH,!confirmed)
       +teamRow(tA,null,false,false,slotA,!confirmed)
-      +'<div class="bracket-match-date">'+date+'</div></div>';
   }
 
   function apiCard(m){
@@ -1260,20 +1223,16 @@ function renderBracket(){
     const isLive=m.status==='IN_PLAY'||m.status==='PAUSED'||m.status==='HALF_TIME';
     const isDone=m.status==='FINISHED';
     const date=new Date(m.utcDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-    return '<div class="bracket-match'+(isLive?' live':'')+'">'
       +teamRow(h||null,isDone||isLive?hs:null,isDone&&hs>as_,isLive,null,false)
       +teamRow(a||null,isDone||isLive?as_:null,isDone&&as_>hs,isLive,null,false)
-      +'<div class="bracket-match-date">'+date+'</div></div>';
   }
 
   function tbdCard(){
-    return '<div class="bracket-match"><div class="bracket-tbd-slot">TBD</div><div class="bracket-tbd-slot">TBD</div></div>';
   }
 
   function roundHTML(stage,title,drawSlots,sliceA,sliceB){
     const stageMatches=apiMatches.filter(m=>m.stage===stage);
     const myMatches=stageMatches.slice(sliceA,sliceB);
-    let html='<div class="bracket-round"><div class="bracket-round-title">'+title+'</div><div class="bracket-matches">';
     if(stage==='LAST_32'&&!hasKO&&drawSlots){
       drawSlots.forEach(([h,a,d])=>{ html+=predictedCard(h,a,d); });
     } else if(myMatches.length>0){
@@ -1305,8 +1264,6 @@ function renderBracket(){
   const isDoneFinal=finalMatch&&finalMatch.status==='FINISHED';
   const isLiveFinal=finalMatch&&(finalMatch.status==='IN_PLAY'||finalMatch.status==='PAUSED');
 
-  let centerHTML='<div class="bracket-center">';
-  centerHTML+='<div class="final-match-card"><div class="final-title">&#127942; Final &middot; 19 Jul</div>';
   if(finalMatch&&(isDoneFinal||isLiveFinal)){
     const h=norm((finalMatch.homeTeam&&(finalMatch.homeTeam.shortName||finalMatch.homeTeam.name))||'');
     const a=norm((finalMatch.awayTeam&&(finalMatch.awayTeam.shortName||finalMatch.awayTeam.name))||'');
@@ -1314,7 +1271,6 @@ function renderBracket(){
     centerHTML+=teamRow(h,isDoneFinal?hs:null,isDoneFinal&&hs>as_,isLiveFinal,null,false);
     centerHTML+=teamRow(a,isDoneFinal?as_:null,isDoneFinal&&as_>hs,isLiveFinal,null,false);
   } else {
-    centerHTML+='<div class="bracket-tbd-slot">TBD</div><div class="bracket-tbd-slot">TBD</div>';
   }
   centerHTML+='</div>';
 
@@ -1323,34 +1279,23 @@ function renderBracket(){
     const a=norm((finalMatch.awayTeam&&(finalMatch.awayTeam.shortName||finalMatch.awayTeam.name))||'');
     const hs=finalMatch.score.fullTime.home??0,as_=finalMatch.score.fullTime.away??0;
     const champ=hs>as_?h:a;
-    centerHTML+='<div class="champion-card"><div class="champion-label">&#127942; Champion</div>'
-      +'<div class="champion-flag">'+(flags[champ]||'')+'</div>'
-      +'<div class="champion-name">'+champ+'</div>'
-      +'<div class="champion-owner">'+(owners[champ]||'')+'</div></div>';
   } else {
-    centerHTML+='<div class="champion-card"><div class="champion-label">Champion</div>'
-      +'<div class="champion-flag">&#127942;</div>'
-      +'<div class="champion-name" style="color:var(--muted);font-size:.85rem">To be decided</div></div>';
   }
   centerHTML+='</div>';
 
   // Assemble: LEFT (L32->L16->QF->SF) | CENTRE (Final+Champion) | RIGHT (SF->QF->L16->L32)
-  let html='<div class="bracket-wrap"><div class="bracket-outer">';
-  html+='<div class="bracket-side left">';
   html+=roundHTML('LAST_32','Last 32',leftDraw,0,8);
   html+=roundHTML('LAST_16','Last 16',null,0,4);
   html+=roundHTML('QUARTER_FINALS','QF',null,0,2);
   html+=roundHTML('SEMI_FINALS','SF',null,0,1);
   html+='</div>';
   html+=centerHTML;
-  html+='<div class="bracket-side right">';
   html+=roundHTML('SEMI_FINALS','SF',null,1,2);
   html+=roundHTML('QUARTER_FINALS','QF',null,2,4);
   html+=roundHTML('LAST_16','Last 16',null,4,8);
   html+=roundHTML('LAST_32','Last 32',rightDraw,8,16);
   html+='</div>';
   html+='</div>';
-  if(!hasKO)html+='<div class="bracket-note">* Predicted from current standings &mdash; dashed border = not yet confirmed.</div>';
   html+='</div>';
   container.innerHTML=html;
 }
