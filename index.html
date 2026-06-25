@@ -211,28 +211,35 @@ select:focus{border-color:var(--green)}
 
   /* BRACKET */
   .bracket-wrap{overflow-x:auto;padding-bottom:1rem}
-  .bracket{display:flex;gap:0;align-items:stretch;min-width:900px}
-  .bracket-round{display:flex;flex-direction:column;flex:1;min-width:160px}
-  .bracket-round-title{font-family:"Bebas Neue",sans-serif;font-size:.85rem;letter-spacing:.08em;color:#fff;background:var(--green-dark);text-align:center;padding:.4rem .5rem;border-right:1px solid rgba(255,255,255,.15)}
-  .bracket-round-title.champion{background:var(--gold)}
-  .bracket-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:.5rem 0;border-right:1px solid var(--border)}
-  .bracket-match{margin:.3rem .4rem;background:var(--card);border:1px solid var(--border);border-radius:7px;overflow:hidden;position:relative}
-  .bracket-match.live{border-color:var(--red);box-shadow:0 0 0 2px rgba(204,37,41,.15)}
-  .bracket-team{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;font-size:.78rem;border-bottom:1px solid var(--border)}
+  .bracket-outer{display:flex;align-items:center;justify-content:center;gap:0;min-width:1100px}
+  .bracket-side{display:flex;flex-direction:row;flex:1}
+  .bracket-side.right{flex-direction:row-reverse}
+  .bracket-round{display:flex;flex-direction:column;min-width:155px;max-width:155px}
+  .bracket-round-title{font-family:"Bebas Neue",sans-serif;font-size:.78rem;letter-spacing:.08em;color:#fff;background:var(--green-dark);text-align:center;padding:.4rem .3rem;border-bottom:1px solid rgba(255,255,255,.15)}
+  .bracket-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:.4rem 3px;border-right:1px solid var(--border)}
+  .bracket-side.right .bracket-matches{border-right:none;border-left:1px solid var(--border)}
+  .bracket-match{margin:.25rem 3px;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .bracket-match.live{border-color:var(--red);box-shadow:0 0 0 2px rgba(204,37,41,.1)}
+  .bracket-match.predicted{opacity:.8}
+  .bracket-team{display:flex;align-items:center;gap:.3rem;padding:.28rem .4rem;font-size:.72rem;border-bottom:1px solid #f0ece4}
   .bracket-team:last-child{border-bottom:none}
   .bracket-team.winner{background:var(--green-light);font-weight:700}
-  .bracket-team.tbd{color:var(--muted);font-style:italic}
-  .bracket-team-flag{font-size:.85rem;flex-shrink:0}
-  .bracket-team-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
-  .bracket-team-owner{font-size:.65rem;color:var(--muted);white-space:nowrap}
-  .bracket-score{font-family:"Bebas Neue",sans-serif;font-size:.95rem;color:var(--green-dark);min-width:22px;text-align:right;flex-shrink:0}
+  .bracket-team-flag{font-size:.8rem;flex-shrink:0}
+  .bracket-team-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;font-size:.72rem}
+  .bracket-team-owner{font-size:.6rem;color:var(--muted)}
+  .bracket-score{font-family:"Bebas Neue",sans-serif;font-size:.88rem;color:var(--green-dark);min-width:18px;text-align:right;flex-shrink:0}
   .bracket-score.live{color:var(--red)}
-  .champion-card{background:var(--gold-light);border:2px solid var(--gold);border-radius:12px;padding:1.5rem;text-align:center;margin:.5rem}
-  .champion-flag{font-size:2.5rem;margin-bottom:.3rem}
-  .champion-name{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;color:var(--green-dark);letter-spacing:.05em}
-  .champion-owner{font-size:.82rem;color:var(--muted);margin-top:.2rem}
-  .bracket-tbd-slot{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;font-size:.75rem;color:var(--muted);font-style:italic;border-bottom:1px solid var(--border)}
+  .bracket-tbd-slot{display:flex;align-items:center;gap:.3rem;padding:.28rem .4rem;font-size:.68rem;color:var(--muted);font-style:italic;border-bottom:1px solid #f0ece4}
   .bracket-tbd-slot:last-child{border-bottom:none}
+  .bracket-match-date{font-size:.58rem;color:var(--muted);padding:1px 5px;text-align:right;background:#fafaf7}
+  .bracket-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:150px;max-width:150px;padding:0 4px}
+  .final-match-card{background:var(--card);border:2px solid var(--gold);border-radius:10px;overflow:hidden;width:100%;margin-bottom:.5rem}
+  .final-title{background:var(--gold);color:#fff;font-family:"Bebas Neue",sans-serif;font-size:.9rem;letter-spacing:.08em;text-align:center;padding:.3rem}
+  .champion-card{background:var(--gold-light);border:2px solid var(--gold);border-radius:10px;padding:1rem .5rem;text-align:center;width:100%}
+  .champion-flag{font-size:2rem;margin-bottom:.2rem}
+  .champion-name{font-family:"Bebas Neue",sans-serif;font-size:1.1rem;color:var(--green-dark);letter-spacing:.04em}
+  .champion-owner{font-size:.68rem;color:var(--muted);margin-top:.2rem}
+  .champion-label{font-family:"Bebas Neue",sans-serif;font-size:.75rem;color:var(--gold);letter-spacing:.06em;margin-bottom:.3rem}
 </style>
 </head>
 <body>
@@ -1138,141 +1145,159 @@ function renderBracket(){
   const container=document.getElementById('bracket-container');
   if(!container)return;
 
-  const stageOrder=['LAST_32','LAST_16','QUARTER_FINALS','SEMI_FINALS','FINAL'];
-  const stageNames={'LAST_32':'Last 32','LAST_16':'Last 16','QUARTER_FINALS':'Quarter Finals','SEMI_FINALS':'Semi Finals','FINAL':'Final'};
-
   const t=lastUpdated?'Updated <b>'+lastUpdated.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'</b>':'Loading…';
   const statusEl=document.getElementById('bracket-status');
   if(statusEl)statusEl.innerHTML=t;
 
-  // Build group standings lookup: 'A1' -> team name (current leader)
+  // Build group standings lookup
   const groupPos={};
   const total=apiStandings.find(s=>s.type==='TOTAL');
   Object.entries(groups).forEach(([g,teams])=>{
     const rows=teams.map(team=>{
-      if(!total)return{team,points:0,gd:0,gf:0};
+      if(!total)return{team,points:0,gd:0,gf:0,played:0};
       const row=total.table.find(r=>norm(r.team.shortName||r.team.name||'')===team);
-      if(!row)return{team,points:0,gd:0,gf:0};
+      if(!row)return{team,points:0,gd:0,gf:0,played:0};
       return{team,points:row.points,gd:row.goalDifference,gf:row.goalsFor,played:row.playedGames};
     }).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf);
-    rows.forEach((r,i)=>{groupPos[g+(i+1)]=r;});
+    rows.forEach((r,i)=>{ groupPos[g+(i+1)]=r; });
   });
 
-  // Check if any knockout matches have real teams assigned
   const koMatches=apiMatches.filter(m=>m.stage!=='GROUP_STAGE');
   const hasKO=koMatches.some(m=>m.homeTeam?.shortName||m.homeTeam?.name);
 
-  function teamSlot(team, score, isWinner, isLive){
-    if(!team){
-      return '<div class="bracket-tbd-slot"><span>TBD</span></div>';
-    }
-    const flag=flags[team]||'🏳';
-    const owner=owners[team]||'';
+  // Helper: render a team row in a match card
+  function teamRow(team, score, isWinner, isLive, slot, predicted){
+    const flag=team?(flags[team]||'🏳'):'';
+    const owner=team?(owners[team]||''):'';
+    const scoreStr=(score!==null&&score!==undefined)?score:'';
     const winClass=isWinner?' winner':'';
-    const scoreStr=score!==null&&score!==undefined?score:'';
     const scoreClass=isLive?' live':'';
+    if(!team) return '<div class="bracket-tbd-slot"><span>'+(slot||'TBD')+'</span></div>';
     return '<div class="bracket-team'+winClass+'">'
       +'<span class="bracket-team-flag">'+flag+'</span>'
-      +'<div style="flex:1;min-width:0"><div class="bracket-team-name">'+team+'</div>'
-      +'<div class="bracket-team-owner">'+owner+'</div></div>'
-      +'<span class="bracket-score'+scoreClass+'">'+scoreStr+'</span>'
+      +'<div style="flex:1;min-width:0"><div class="bracket-team-name">'+team+(predicted?' *':'')+'</div>'
+      +'<div class="bracket-team-owner">'+owner+(slot?' · '+slot:'')+'</div></div>'
+      +(scoreStr!==''?'<span class="bracket-score'+scoreClass+'">'+scoreStr+'</span>':'')
       +'</div>';
   }
 
-  function matchCard(m){
+  // Helper: render a predicted Last 32 match
+  function predictedMatch(slotH, slotA, date){
+    const rH=groupPos[slotH];
+    const rA=groupPos[slotA];
+    const teamH=rH?rH.team:null;
+    const teamA=rA?rA.team:null;
+    const allPlayed=(rH&&rH.played>=3)&&(rA&&rA.played>=3);
+    return '<div class="bracket-match predicted">'
+      +teamRow(teamH,null,false,false,slotH,!allPlayed)
+      +teamRow(teamA,null,false,false,slotA,!allPlayed)
+      +'<div class="bracket-match-date">'+date+'</div>'
+      +'</div>';
+  }
+
+  // Helper: render a real API match
+  function apiMatch(m){
     const h=norm(m.homeTeam?.shortName||m.homeTeam?.name||'');
     const a=norm(m.awayTeam?.shortName||m.awayTeam?.name||'');
     const hs=m.score?.fullTime?.home;
     const as_=m.score?.fullTime?.away;
     const isLive=m.status==='IN_PLAY'||m.status==='PAUSED'||m.status==='HALF_TIME';
     const isDone=m.status==='FINISHED';
-    const hWin=isDone&&hs>as_;
-    const aWin=isDone&&as_>hs;
-    const liveClass=isLive?' live':'';
-    return '<div class="bracket-match'+liveClass+'">'
-      +teamSlot(h||null,isDone||isLive?hs:null,hWin,isLive)
-      +teamSlot(a||null,isDone||isLive?as_:null,aWin,isLive)
+    const hWin=isDone&&hs>as_; const aWin=isDone&&as_>hs;
+    const date=new Date(m.utcDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    return '<div class="bracket-match'+(isLive?' live':'')+'">'
+      +teamRow(h||null,isDone||isLive?hs:null,hWin,isLive,null,false)
+      +teamRow(a||null,isDone||isLive?as_:null,aWin,isLive,null,false)
+      +'<div class="bracket-match-date">'+date+'</div>'
       +'</div>';
   }
 
-  // Check for champion
-  const finalMatch=apiMatches.find(m=>m.stage==='FINAL'&&m.status==='FINISHED');
-  let championHTML='';
-  if(finalMatch){
+  // Split Last 32 into left (matches 0-7) and right (matches 8-15)
+  const leftDraw=last32Draw.slice(0,8);
+  const rightDraw=last32Draw.slice(8,16);
+
+  function renderRound(stage, matchList, side){
+    const stageMatches=apiMatches.filter(m=>m.stage===stage);
+    const names={'LAST_32':'Last 32','LAST_16':'Last 16','QUARTER_FINALS':'QF','SEMI_FINALS':'SF'};
+    let html='<div class="bracket-round">';
+    html+='<div class="bracket-round-title">'+names[stage]+'</div>';
+    html+='<div class="bracket-matches">';
+    if(stage==='LAST_32'&&!hasKO){
+      matchList.forEach(([h,a,d])=>{ html+=predictedMatch(h,a,d); });
+    } else {
+      // Use API matches for this round, split by side
+      const half=Math.floor(stageMatches.length/2);
+      const matches=side==='left'?stageMatches.slice(0,half||stageMatches.length):stageMatches.slice(half);
+      if(matches.length===0){
+        // show TBD placeholders
+        const count=side==='left'?matchList.length:matchList.length;
+        for(let i=0;i<(stage==='LAST_16'?4:stage==='QUARTER_FINALS'?2:1);i++){
+          html+='<div class="bracket-match"><div class="bracket-tbd-slot">TBD</div><div class="bracket-tbd-slot">TBD</div></div>';
+        }
+      } else {
+        matches.forEach(m=>{ html+=apiMatch(m); });
+      }
+    }
+    html+='</div></div>';
+    return html;
+  }
+
+  // Final + Champion center
+  const finalMatch=apiMatches.find(m=>m.stage==='FINAL');
+  const thirdMatch=apiMatches.find(m=>m.stage==='THIRD_PLACE');
+  let centerHTML='<div class="bracket-center">';
+  centerHTML+='<div class="final-match-card">';
+  centerHTML+='<div class="final-title">🏆 Final · 19 Jul</div>';
+  if(finalMatch&&(finalMatch.status==='FINISHED'||finalMatch.status==='IN_PLAY')){
+    centerHTML+=apiMatch(finalMatch).replace('bracket-match','').replace('<div class="bracket-match-date">','<div style="display:none">');
+  } else {
+    centerHTML+='<div class="bracket-tbd-slot">TBD</div><div class="bracket-tbd-slot">TBD</div>';
+  }
+  centerHTML+='</div>';
+
+  // Champion
+  if(finalMatch&&finalMatch.status==='FINISHED'){
     const h=norm(finalMatch.homeTeam?.shortName||finalMatch.homeTeam?.name||'');
     const a=norm(finalMatch.awayTeam?.shortName||finalMatch.awayTeam?.name||'');
     const hs=finalMatch.score?.fullTime?.home??0;
     const as_=finalMatch.score?.fullTime?.away??0;
     const champ=hs>as_?h:a;
-    if(champ){
-      championHTML='<div class="bracket-round" style="min-width:140px">'
-        +'<div class="bracket-round-title champion">🏆 Champion</div>'
-        +'<div class="bracket-matches" style="justify-content:center">'
-        +'<div class="champion-card"><div class="champion-flag">'+(flags[champ]||'🏳')+'</div>'
-        +'<div class="champion-name">'+champ+'</div>'
-        +'<div class="champion-owner">'+(owners[champ]||'')+'</div></div>'
-        +'</div></div>';
-    }
+    centerHTML+='<div class="champion-card">'
+      +'<div class="champion-label">🏆 Champion</div>'
+      +'<div class="champion-flag">'+(flags[champ]||'🏳')+'</div>'
+      +'<div class="champion-name">'+champ+'</div>'
+      +'<div class="champion-owner">'+(owners[champ]||'')+'</div>'
+      +'</div>';
+  } else {
+    centerHTML+='<div class="champion-card"><div class="champion-label">Champion</div><div class="champion-flag">🏆</div><div class="champion-name" style="color:var(--muted);font-size:.9rem">To be decided</div></div>';
   }
+  centerHTML+='</div>';
 
-  let html='<div class="bracket-wrap"><div class="bracket">';
+  // Build full bracket: Left side (L32→L16→QF→SF) | Center (Final+Champion) | Right side (SF→QF→L16→L32)
+  let html='<div class="bracket-wrap"><div class="bracket-outer">';
 
-  stageOrder.forEach(stage=>{
-    const stageMatches=apiMatches.filter(m=>m.stage===stage);
-    if(stageMatches.length===0)return;
-    html+='<div class="bracket-round">';
-    html+='<div class="bracket-round-title">'+stageNames[stage]+'</div>';
-    html+='<div class="bracket-matches">';
+  // LEFT SIDE
+  html+='<div class="bracket-side left">';
+  html+=renderRound('LAST_32', leftDraw, 'left');
+  html+=renderRound('LAST_16', [], 'left');
+  html+=renderRound('QUARTER_FINALS', [], 'left');
+  html+=renderRound('SEMI_FINALS', [], 'left');
+  html+='</div>';
 
-    if(stage==='LAST_32'&&!hasKO){
-      // Show predicted teams from current standings
-      last32Draw.forEach(([slotH,slotA,date])=>{
-        const rH=groupPos[slotH];
-        const rA=groupPos[slotA];
-        const teamH=rH?rH.team:null;
-        const teamA=rA?rA.team:null;
-        const playedH=rH?rH.played:0;
-        const playedA=rA?rA.played:0;
-        const pending=playedH<3||playedA<3;
-        html+='<div class="bracket-match" style="opacity:'+(pending?.75:1)+'">';
-        // Home slot
-        if(teamH){
-          const flag=flags[teamH]||'🏳';
-          const owner=owners[teamH]||'';
-          html+='<div class="bracket-team'+(pending?' tbd':'')+'">'
-            +'<span class="bracket-team-flag">'+flag+'</span>'
-            +'<div style="flex:1;min-width:0"><div class="bracket-team-name">'+teamH+(pending?' *':'')+'</div>'
-            +'<div class="bracket-team-owner">'+owner+' &middot; '+slotH+'</div></div>'
-            +'</div>';
-        } else {
-          html+='<div class="bracket-tbd-slot"><span>'+slotH+'</span></div>';
-        }
-        // Away slot
-        if(teamA){
-          const flag=flags[teamA]||'🏳';
-          const owner=owners[teamA]||'';
-          html+='<div class="bracket-team'+(pending?' tbd':'')+'">'
-            +'<span class="bracket-team-flag">'+flag+'</span>'
-            +'<div style="flex:1;min-width:0"><div class="bracket-team-name">'+teamA+(pending?' *':'')+'</div>'
-            +'<div class="bracket-team-owner">'+owner+' &middot; '+slotA+'</div></div>'
-            +'</div>';
-        } else {
-          html+='<div class="bracket-tbd-slot"><span>'+slotA+'</span></div>';
-        }
-        html+='<div style="font-size:.6rem;color:var(--muted);padding:2px 6px;text-align:right">'+date+'</div>';
-        html+='</div>';
-      });
-    } else {
-      stageMatches.forEach(m=>{ html+=matchCard(m); });
-    }
-    html+='</div></div>';
-  });
+  // CENTER
+  html+=centerHTML;
 
-  if(championHTML)html+=championHTML;
-  html+='</div></div>';
-  if(!hasKO){
-    html+='<div style="font-size:.75rem;color:var(--muted);margin-top:.8rem">* Based on current standings — not yet confirmed. Groups with unplayed matches shown at reduced opacity.</div>';
-  }
+  // RIGHT SIDE
+  html+='<div class="bracket-side right">';
+  html+=renderRound('SEMI_FINALS', [], 'right');
+  html+=renderRound('QUARTER_FINALS', [], 'right');
+  html+=renderRound('LAST_16', [], 'right');
+  html+=renderRound('LAST_32', rightDraw, 'right');
+  html+='</div>';
+
+  html+='</div>';
+  if(!hasKO) html+='<div style="font-size:.72rem;color:var(--muted);margin-top:.6rem">* Based on current standings — subject to change. | Matches without all groups completed shown at reduced opacity.</div>';
+  html+='</div>';
   container.innerHTML=html;
 }
 
