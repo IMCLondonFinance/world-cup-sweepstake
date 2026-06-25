@@ -1182,6 +1182,13 @@ function renderBracket(){
   const statusEl=document.getElementById('bracket-status');
   if(statusEl)statusEl.innerHTML=t;
 
+  // If no data yet, show loading and retry
+  if(apiMatches.length===0){
+    container.innerHTML='<div class="no-games"><div class="icon">📡</div><p>Loading bracket data...</p></div>';
+    setTimeout(renderBracket, 2000);
+    return;
+  }
+
   // Build group position lookup: 'A1','A2' etc -> {team, points, played...}
   const groupPos={};
   const total=apiStandings.find(s=>s.type==='TOTAL');
