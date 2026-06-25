@@ -26,7 +26,6 @@ nav button{background:none;border:none;border-bottom:3px solid transparent;paddi
 nav button:hover{color:var(--text)}
 nav button.active{color:var(--green-dark);border-bottom-color:var(--green)}
 main{max-width:1200px;margin:0 auto;padding:2rem}
-  #bracket{max-width:100%;padding:2rem 1rem}
 .section{display:none}.section.visible{display:block}
 .section-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;color:var(--green-dark);margin-bottom:1.5rem;padding-bottom:.6rem;border-bottom:2px solid var(--green);display:flex;align-items:center;gap:.5rem}
 
@@ -244,6 +243,7 @@ select:focus{border-color:var(--green)}
 
   /* BRACKET */
   #bracket{max-width:100%!important;padding:2rem 1rem}
+  body.bracket-active main{max-width:100%!important;padding:1rem}
   .bracket-wrap{overflow-x:auto;padding-bottom:1.5rem;width:100%}
   .bracket-outer{display:flex;flex-direction:row;align-items:flex-start;justify-content:center;min-width:1600px;gap:0}
   .bracket-side{display:flex;flex-direction:row;flex:1}
@@ -1090,6 +1090,7 @@ function showSection(id,btn){
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('visible');
   btn.classList.add('active');
+  document.body.className=id==='bracket'?'bracket-active':'';
   if(id==='groups')renderGroups();
   if(id==='bracket')renderBracket();
   if(id==='leaderboard')renderLeaderboard();
@@ -1186,49 +1187,66 @@ function renderBracket(){
   const groupPos={};
   const total=apiStandings.find(s=>s.type==='TOTAL');
   Object.entries(groups).forEach(([g,teams])=>{
+    if(!total){
+      // No standings yet — use static group order as placeholder
+      teams.forEach((team,i)=>{ groupPos[g+(i+1)]={team:team,points:0,gd:0,gf:0,played:0}; });
+      return;
+    }
     const rows=teams.map(team=>{
-      if(!total)return{team,points:0,gd:0,gf:0,played:0};
       const row=total.table.find(r=>norm(r.team.shortName||r.team.name||'')===team);
       if(!row)return{team,points:0,gd:0,gf:0,played:0};
       return{team,points:row.points,gd:row.goalDifference,gf:row.goalsFor,played:row.playedGames};
     }).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf);
-    // If no standings data, just use original group order as placeholder
-    rows.forEach((r,i)=>{ groupPos[g+(i+1)]=r.played!==undefined?r:{team:teams[i]||'',points:0,gd:0,gf:0,played:0}; });
+    rows.forEach((r,i)=>{ groupPos[g+(i+1)]=r; });
   });
 
   const koMatches=apiMatches.filter(m=>m.stage!=='GROUP_STAGE');
   const hasKO=koMatches.some(m=>m.homeTeam&&m.homeTeam.id!==null&&m.homeTeam.id!==undefined);
 
   function teamRow(team,score,isWinner,isLive,label,isPredicted){
+    if(!team||team===''||team==='undefined'){
+      return '<div class="bracket-tbd-slot">'+(label||'TBD')+'</div>';
+    }
     const flag=flags[team]||'';
     const owner=owners[team]||'';
-    const scoreStr=(score!==null&&score!==undefined)?score:'';
+    const scoreStr=(score!==null&&score!==undefined)?String(score):'';
+    return '<div class="bracket-team'+(isWinner?' winner':'')+'">'
+      +'<span class="bracket-team-flag">'+flag+'</span>'
       +'<div style="flex:1;min-width:0">'
+      +'<div class="bracket-team-name">'+team+(isPredicted?' *':'')+'</div>'
+      +'<div class="bracket-team-owner">'+owner+(label?' &middot; '+label:'')+'</div>'
       +'</div>'
+      +(scoreStr!==''?'<span class="bracket-score'+(isLive?' live':'')+'">'+scoreStr+'</span>':'')
       +'</div>';
   }
 
   function predictedCard(slotH,slotA,date){
     const rH=groupPos[slotH],rA=groupPos[slotA];
-    const tH=rH?rH.team:null,tA=rA?rA.team:null;
+    const tH=(rH&&rH.team)?rH.team:null;
+    const tA=(rA&&rA.team)?rA.team:null;
     const confirmed=(rH&&rH.played>=3)&&(rA&&rA.played>=3);
+    return '<div class="bracket-match predicted">'
       +teamRow(tH,null,false,false,slotH,!confirmed)
       +teamRow(tA,null,false,false,slotA,!confirmed)
+      +'<div class="bracket-match-date">'+date+'</div></div>';
   }
 
   function apiCard(m){
     const h=norm((m.homeTeam&&(m.homeTeam.shortName||m.homeTeam.name))||'');
     const a=norm((m.awayTeam&&(m.awayTeam.shortName||m.awayTeam.name))||'');
     const ft=m.score&&m.score.fullTime;
-    const hs=ft?ft.home:null, as_=ft?ft.away:null;
+    const hs=ft?ft.home:null,as_=ft?ft.away:null;
     const isLive=m.status==='IN_PLAY'||m.status==='PAUSED'||m.status==='HALF_TIME';
     const isDone=m.status==='FINISHED';
     const date=new Date(m.utcDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    return '<div class="bracket-match'+(isLive?' live':'')+'">'
       +teamRow(h||null,isDone||isLive?hs:null,isDone&&hs>as_,isLive,null,false)
       +teamRow(a||null,isDone||isLive?as_:null,isDone&&as_>hs,isLive,null,false)
+      +'<div class="bracket-match-date">'+date+'</div></div>';
   }
 
   function tbdCard(){
+    return '<div class="bracket-match"><div class="bracket-tbd-slot">TBD</div><div class="bracket-tbd-slot">TBD</div></div>';
   }
 
   function roundHTML(stage,title,drawSlots,sliceA,sliceB){
