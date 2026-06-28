@@ -1282,29 +1282,29 @@ function renderBracket(){
   }
 
   // Official Last 32 draw — left 8 and right 8 feeding into centre
-  // Real confirmed Last 32 draw — left 8 (matches 1-8) and right 8 (matches 9-16)
+  // Confirmed bracket paths — adjacent pairs feed same L16, pairs of pairs feed same QF
+  // LEFT SIDE → SF1
   const leftDraw=[
-    ['South Africa','Canada','28 Jun'],
-    ['Brazil','Japan','29 Jun'],
-    ['Germany','Paraguay','29 Jun'],
-    ['Netherlands','Morocco','30 Jun'],
-    ['Ivory Coast','Norway','30 Jun'],
-    ['France','Sweden','30 Jun'],
-    ['Mexico','Ecuador','1 Jul'],
-    ['England','DR Congo','1 Jul'],
+    ['Germany','Paraguay','29 Jun'],         // L16-A side 1
+    ['France','Sweden','30 Jun'],            // L16-A side 2  → Germany winner vs France winner
+    ['South Africa','Canada','28 Jun'],      // L16-B side 1
+    ['Netherlands','Morocco','30 Jun'],      // L16-B side 2  → QF1
+    ['Brazil','Japan','29 Jun'],             // L16-C side 1
+    ['Ivory Coast','Norway','30 Jun'],       // L16-C side 2  → Brazil winner vs Ivory Coast/Norway winner
+    ['Mexico','Ecuador','30 Jun'],           // L16-D side 1
+    ['England','DR Congo','1 Jul'],          // L16-D side 2  → QF2
   ];
+  // RIGHT SIDE → SF2
   const rightDraw=[
-    ['Belgium','Senegal','1 Jul'],
-    ['USA','Bosnia & Herzegovina','2 Jul'],
-    ['Spain','Austria','2 Jul'],
-    ['Portugal','Croatia','2 Jul'],
-    ['Switzerland','Algeria','3 Jul'],
-    ['Australia','Egypt','3 Jul'],
-    ['Argentina','Cape Verde','3 Jul'],
-    ['Colombia','Ghana','4 Jul'],
-  ];
-
-  // Centre: Final + Champion
+    ['Portugal','Croatia','2 Jul'],          // L16-E side 1
+    ['Spain','Austria','2 Jul'],             // L16-E side 2  → Portugal winner vs Spain winner
+    ['USA','Bosnia & Herzegovina','2 Jul'],  // L16-F side 1
+    ['Belgium','Senegal','1 Jul'],           // L16-F side 2  → QF3
+    ['Argentina','Cape Verde','3 Jul'],      // L16-G side 1
+    ['Australia','Egypt','3 Jul'],           // L16-G side 2  → Argentina winner vs Australia/Egypt winner
+    ['Switzerland','Algeria','3 Jul'],       // L16-H side 1
+    ['Colombia','Ghana','4 Jul'],            // L16-H side 2  → QF4
+  ];  // Centre: Final + Champion
   const finalMatch=apiMatches.find(m=>m.stage==='FINAL');
   const isDoneFinal=finalMatch&&finalMatch.status==='FINISHED';
   const isLiveFinal=finalMatch&&(finalMatch.status==='IN_PLAY'||finalMatch.status==='PAUSED');
