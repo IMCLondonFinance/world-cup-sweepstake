@@ -1010,7 +1010,7 @@ const TSTART=new Date('2026-06-11T00:00:00');
 const TEND=new Date('2026-07-19T23:59:59');
 function fmtDay(iso){const d=new Date(iso+'T12:00:00Z');return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
 function groupStageDays(){
-  if(apiMatches.length)return[...new Set(apiMatches.filter(m=>m.stage==='GROUP_STAGE').map(m=>m.utcDate.slice(0,10)))].sort();
+  if(apiMatches.length)return[...new Set(apiMatches.map(m=>m.utcDate.slice(0,10)))].sort();
   return["2026-06-11","2026-06-12","2026-06-13","2026-06-14","2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-19","2026-06-20","2026-06-21","2026-06-22","2026-06-23","2026-06-24","2026-06-25","2026-06-26","2026-06-27"];
 }
 function renderToday(){
@@ -1037,7 +1037,7 @@ function renderToday(){
 function pickDay(iso,btn){document.querySelectorAll('.today-nav button').forEach(b=>b.classList.remove('active-day'));btn.classList.add('active-day');renderDayMatches(iso,document.getElementById('day-fix'),true);}
 function renderDayMatches(iso,container,showHead){
   if(!container)return;
-  const ms=apiMatches.filter(m=>m.stage==='GROUP_STAGE'&&m.utcDate.startsWith(iso));
+  const ms=apiMatches.filter(m=>m.utcDate.startsWith(iso));
   if(!ms.length&&!apiMatches.length){container.innerHTML='<div class="no-games"><div class="icon">\ud83d\udce1</div><p>Fetching live data…</p></div>';return;}
   if(!ms.length){container.innerHTML='<div class="no-games"><div class="icon">\ud83d\ude34</div><p>No group stage matches on '+fmtDay(iso)+'.</p></div>';return;}
   const live=ms.some(m=>m.status==='IN_PLAY'||m.status==='PAUSED');
@@ -1220,15 +1220,31 @@ function renderBracket(){
       +'</div>';
   }
 
-  function predictedCard(slotH,slotA,date){
-    const rH=groupPos[slotH],rA=groupPos[slotA];
-    const tH=(rH&&rH.team)?rH.team:null;
-    const tA=(rA&&rA.team)?rA.team:null;
-    const confirmed=(rH&&rH.played>=3)&&(rA&&rA.played>=3);
-    return '<div class="bracket-match predicted">'
-      +teamRow(tH,null,false,false,slotH,!confirmed)
-      +teamRow(tA,null,false,false,slotA,!confirmed)
+  function predictedCard(teamH,teamA,date){
+    // Now using real confirmed team names directly
+    const tH=(teamH&&teamH!=='')?teamH:null;
+    const tA=(teamA&&teamA!=='')?teamA:null;
+    // Check if API has a real match for this pair (FINISHED or IN_PLAY)
+    const apiM=findApiMatch(tH,tA);
+    if(apiM&&apiM.status==='FINISHED'){
+      return apiCard(apiM);
+    }
+    if(apiM&&(apiM.status==='IN_PLAY'||apiM.status==='PAUSED'||apiM.status==='HALF_TIME')){
+      return apiCard(apiM);
+    }
+    return '<div class="bracket-match">'
+      +teamRow(tH,null,false,false,null,false)
+      +teamRow(tA,null,false,false,null,false)
       +'<div class="bracket-match-date">'+date+'</div></div>';
+  }
+
+  function findApiMatch(h,a){
+    if(!h||!a)return null;
+    return apiMatches.find(m=>{
+      const mh=norm((m.homeTeam&&(m.homeTeam.shortName||m.homeTeam.name))||'');
+      const ma=norm((m.awayTeam&&(m.awayTeam.shortName||m.awayTeam.name))||'');
+      return(mh===h&&ma===a)||(mh===a&&ma===h);
+    });
   }
 
   function apiCard(m){
@@ -1253,7 +1269,7 @@ function renderBracket(){
     const stageMatches=apiMatches.filter(m=>m.stage===stage);
     const myMatches=stageMatches.slice(sliceA,sliceB);
     let rhtml='<div class="bracket-round"><div class="bracket-round-title">'+title+'</div><div class="bracket-matches">';
-    if(stage==='LAST_32'&&!hasKO&&drawSlots){
+    if(stage==='LAST_32'&&drawSlots){
       drawSlots.forEach(([h,a,d])=>{ rhtml+=predictedCard(h,a,d); });
     } else if(myMatches.length>0){
       myMatches.forEach(m=>{ rhtml+=apiCard(m); });
@@ -1266,17 +1282,26 @@ function renderBracket(){
   }
 
   // Official Last 32 draw — left 8 and right 8 feeding into centre
+  // Real confirmed Last 32 draw — left 8 (matches 1-8) and right 8 (matches 9-16)
   const leftDraw=[
-    ['A1','B2','28 Jun'],['C1','D2','28 Jun'],
-    ['E1','F2','29 Jun'],['G1','H2','29 Jun'],
-    ['I1','J2','29 Jun'],['K1','L2','30 Jun'],
-    ['B1','A2','30 Jun'],['D1','C2','30 Jun'],
+    ['South Africa','Canada','28 Jun'],
+    ['Brazil','Japan','29 Jun'],
+    ['Germany','Paraguay','29 Jun'],
+    ['Netherlands','Morocco','30 Jun'],
+    ['Ivory Coast','Norway','30 Jun'],
+    ['France','Sweden','30 Jun'],
+    ['Mexico','Ecuador','1 Jul'],
+    ['England','DR Congo','1 Jul'],
   ];
   const rightDraw=[
-    ['F1','E2','1 Jul'],['H1','G2','1 Jul'],
-    ['J1','I2','1 Jul'],['L1','K2','2 Jul'],
-    ['A3','B3','2 Jul'],['C3','D3','2 Jul'],
-    ['E3','F3','3 Jul'],['G3','H3','3 Jul'],
+    ['Belgium','Senegal','1 Jul'],
+    ['USA','Bosnia & Herzegovina','2 Jul'],
+    ['Spain','Austria','2 Jul'],
+    ['Portugal','Croatia','2 Jul'],
+    ['Switzerland','Algeria','3 Jul'],
+    ['Australia','Egypt','3 Jul'],
+    ['Argentina','Cape Verde','3 Jul'],
+    ['Colombia','Ghana','4 Jul'],
   ];
 
   // Centre: Final + Champion
@@ -1331,7 +1356,7 @@ function renderBracket(){
   html+=roundHTML('LAST_32','Last 32',rightDraw,8,16);
   html+='</div>';
   html+='</div></div>';
-  if(!hasKO)html+='<div class="bracket-note">* Predicted from current standings &mdash; dashed border = not yet confirmed.</div>';
+
   container.innerHTML=html;
 }
 
