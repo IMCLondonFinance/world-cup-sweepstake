@@ -250,7 +250,8 @@ select:focus{border-color:var(--green)}
   .bracket-side.right{flex-direction:row}
   .bracket-round{display:flex;flex-direction:column;min-width:190px;max-width:190px;border-right:1px solid var(--border)}
   .bracket-round-title{font-family:'Bebas Neue',sans-serif;font-size:.82rem;letter-spacing:.08em;color:#fff;background:var(--green-dark);text-align:center;padding:.45rem .3rem}
-  .bracket-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:.4rem 3px}
+  .bracket-matches{display:flex;flex-direction:column;flex:1}
+  .bracket-match-wrap{display:flex;flex-direction:column;justify-content:center;flex:1;padding:3px}
   .bracket-match{margin:.2rem 3px;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
   .bracket-match.live{border-color:var(--red)}
   .bracket-match.predicted{border-style:dashed;opacity:.85}
@@ -1268,15 +1269,17 @@ function renderBracket(){
   function roundHTML(stage,title,drawSlots,sliceA,sliceB){
     const stageMatches=apiMatches.filter(m=>m.stage===stage);
     const myMatches=stageMatches.slice(sliceA,sliceB);
-    let rhtml='<div class="bracket-round"><div class="bracket-round-title">'+title+'</div><div class="bracket-matches">';
+    let cards=[];
     if(stage==='LAST_32'&&drawSlots){
-      drawSlots.forEach(([h,a,d])=>{ rhtml+=predictedCard(h,a,d); });
+      drawSlots.forEach(([h,a,d])=>{ cards.push(predictedCard(h,a,d)); });
     } else if(myMatches.length>0){
-      myMatches.forEach(m=>{ rhtml+=apiCard(m); });
+      myMatches.forEach(m=>{ cards.push(apiCard(m)); });
     } else {
-      const n=drawSlots?drawSlots.length:(stage==='LAST_16'?4:stage==='QUARTER_FINALS'?2:1);
-      for(let i=0;i<n;i++) rhtml+=tbdCard();
+      const n=(stage==='LAST_16'?4:stage==='QUARTER_FINALS'?2:1);
+      for(let i=0;i<n;i++) cards.push(tbdCard());
     }
+    let rhtml='<div class="bracket-round"><div class="bracket-round-title">'+title+'</div><div class="bracket-matches">';
+    cards.forEach(card=>{ rhtml+='<div class="bracket-match-wrap">'+card+'</div>'; });
     rhtml+='</div></div>';
     return rhtml;
   }
