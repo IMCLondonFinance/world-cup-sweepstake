@@ -1494,13 +1494,16 @@ function renderBracket(){
 
   // LEFT SIDE
   const leftR32 =r32.slice(0,8).map(e=>renderR32(e));
-  const leftL16 =[0,1,2,3].map(i=>renderKO('LAST_16',i));
+  // L16 bracket positions mapped to correct API indices
+  // Left side: [Paraguay/France path, Canada/Morocco path, Portugal/Spain path, USA/Belgium path]
+  const leftL16 =[1,0,4,5].map(i=>renderKO('LAST_16',i));
   const leftQF  =[0,1].map(i=>renderKO('QUARTER_FINALS',i));
   const leftSF  =[renderKO('SEMI_FINALS',0)];
 
   // RIGHT SIDE
+  // Right side: [Brazil/Norway path, Mexico/England path, Argentina/Egypt path, Switzerland/Colombia path]
   const rightR32=r32.slice(8,16).map(e=>renderR32(e));
-  const rightL16=[4,5,6,7].map(i=>renderKO('LAST_16',i));
+  const rightL16=[2,3,6,7].map(i=>renderKO('LAST_16',i));
   const rightQF =[2,3].map(i=>renderKO('QUARTER_FINALS',i));
   const rightSF =[renderKO('SEMI_FINALS',1)];
 
