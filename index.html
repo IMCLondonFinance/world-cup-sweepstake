@@ -1371,26 +1371,29 @@ function renderBracket(){
   const statusEl=document.getElementById('bracket-status');
   if(statusEl)statusEl.innerHTML=t;
 
+  // Confirmed Last 32 draw in bracket order (pairs feed same L16)
   const r32=[
-    {h:'Germany',   a:'Paraguay',             d:'29 Jun'},
-    {h:'France',    a:'Sweden',               d:'30 Jun'},
-    {h:'South Africa',a:'Canada',             d:'28 Jun'},
-    {h:'Netherlands',a:'Morocco',             d:'30 Jun'},
-    {h:'Portugal',  a:'Croatia',              d:'2 Jul'},
-    {h:'Spain',     a:'Austria',              d:'2 Jul'},
-    {h:'USA',       a:'Bosnia & Herzegovina', d:'2 Jul'},
-    {h:'Belgium',   a:'Senegal',              d:'1 Jul'},
-    {h:'Brazil',    a:'Japan',                d:'29 Jun'},
-    {h:'Ivory Coast',a:'Norway',              d:'30 Jun'},
-    {h:'Mexico',    a:'Ecuador',              d:'30 Jun'},
-    {h:'England',   a:'DR Congo',             d:'1 Jul'},
-    {h:'Argentina', a:'Cape Verde',           d:'3 Jul'},
-    {h:'Australia', a:'Egypt',                d:'3 Jul'},
-    {h:'Switzerland',a:'Algeria',             d:'3 Jul'},
-    {h:'Colombia',  a:'Ghana',                d:'4 Jul'},
+    {h:'Germany',   a:'Paraguay',             d:'29 Jun'}, // 0
+    {h:'France',    a:'Sweden',               d:'30 Jun'}, // 1  → L16: W0 vs W1
+    {h:'South Africa',a:'Canada',             d:'28 Jun'}, // 2
+    {h:'Netherlands',a:'Morocco',             d:'30 Jun'}, // 3  → L16: W2 vs W3 → QF
+    {h:'Portugal',  a:'Croatia',              d:'2 Jul'},  // 4
+    {h:'Spain',     a:'Austria',              d:'2 Jul'},  // 5  → L16: W4 vs W5
+    {h:'USA',       a:'Bosnia & Herzegovina', d:'2 Jul'},  // 6
+    {h:'Belgium',   a:'Senegal',              d:'1 Jul'},  // 7  → L16: W6 vs W7 → QF → SF1
+    {h:'Brazil',    a:'Japan',                d:'29 Jun'}, // 8
+    {h:'Ivory Coast',a:'Norway',              d:'30 Jun'}, // 9  → L16: W8 vs W9
+    {h:'Mexico',    a:'Ecuador',              d:'30 Jun'}, // 10
+    {h:'England',   a:'DR Congo',             d:'1 Jul'},  // 11 → L16: W10 vs W11 → QF
+    {h:'Argentina', a:'Cape Verde',           d:'3 Jul'},  // 12
+    {h:'Australia', a:'Egypt',                d:'3 Jul'},  // 13 → L16: W12 vs W13
+    {h:'Switzerland',a:'Algeria',             d:'3 Jul'},  // 14
+    {h:'Colombia',  a:'Ghana',                d:'4 Jul'},  // 15 → L16: W14 vs W15 → QF → SF2
   ];
 
+  // Get API match for two teams
   function getApiMatch(h,a){
+    if(!h||!a)return null;
     return apiMatches.find(m=>{
       const mh=norm((m.homeTeam&&(m.homeTeam.shortName||m.homeTeam.name))||'');
       const ma=norm((m.awayTeam&&(m.awayTeam.shortName||m.awayTeam.name))||'');
@@ -1398,107 +1401,147 @@ function renderBracket(){
     });
   }
 
-  function matchCard(h,a,d,apiM){
-    const isDone=apiM&&apiM.status==='FINISHED';
-    const isLive=apiM&&(apiM.status==='IN_PLAY'||apiM.status==='PAUSED'||apiM.status==='HALF_TIME');
-    const ft=apiM&&apiM.score&&apiM.score.fullTime;
-    const hs=ft?ft.home:null, as_=ft?ft.away:null;
-    const swapped=apiM&&norm((apiM.homeTeam&&(apiM.homeTeam.shortName||apiM.homeTeam.name))||'')!==h;
-    const s1=swapped?as_:hs, s2=swapped?hs:as_;
-    const winner=isDone?(s1>s2?h:a):'';
-    function row(team,score,win){
-      return '<div class="br-team'+(win?' br-win':'')+'">'
-        +'<span class="br-flag">'+(flags[team]||'')+'</span>'
-        +'<div class="br-info">'
-        +'<div class="br-name">'+team+'</div>'
-        +'<div class="br-owner">'+(owners[team]||'')+'</div>'
-        +'</div>'
-        +(score!==null&&score!==undefined?'<span class="br-score'+(isLive?' br-live':'')+'">'+score+'</span>':'')
-        +'</div>';
+  // Get API match by stage and sort index
+  function getStageMatch(stage,idx){
+    const ms=apiMatches.filter(m=>m.stage===stage).sort((a,b)=>a.utcDate.localeCompare(b.utcDate));
+    return ms[idx]||null;
+  }
+
+  // Render a team row
+  function teamRow(team,score,isWinner,isLive){
+    if(!team){
+      return '<div class="br-team"><span class="br-flag"></span><div class="br-info"><div class="br-name br-tbd-text">TBD</div></div></div>';
     }
-    const liveClass=isLive?' br-match-live':'';
-    const doneClass=isDone?' br-match-done':'';
-    return '<div class="br-match'+liveClass+doneClass+'">'
-      +row(h,isDone||isLive?s1:null,isDone&&h===winner)
-      +row(a,isDone||isLive?s2:null,isDone&&a===winner)
-      +'<div class="br-date">'+d+'</div>'
+    const flag=flags[team]||'';
+    const owner=owners[team]||'';
+    const sc=(score!==null&&score!==undefined)?String(score):'';
+    return '<div class="br-team'+(isWinner?' br-win':'')+'">'
+      +'<span class="br-flag">'+flag+'</span>'
+      +'<div class="br-info"><div class="br-name">'+team+'</div><div class="br-owner">'+owner+'</div></div>'
+      +(sc!==''?'<span class="br-score'+(isLive?' br-live':'')+'">'+sc+'</span>':'')
       +'</div>';
   }
 
-  function tbdCard(d){
+  // Render a match from an API match object
+  function renderApiMatch(m){
+    if(!m) return renderTbd('');
+    const h=norm((m.homeTeam&&(m.homeTeam.shortName||m.homeTeam.name))||'');
+    const a=norm((m.awayTeam&&(m.awayTeam.shortName||m.awayTeam.name))||'');
+    const ft=m.score&&m.score.fullTime;
+    const hs=ft?ft.home:null, as_=ft?ft.away:null;
+    const isDone=m.status==='FINISHED';
+    const isLive=m.status==='IN_PLAY'||m.status==='PAUSED'||m.status==='HALF_TIME';
+    const winner=isDone?(hs>as_?h:a):'';
+    const date=new Date(m.utcDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    const liveClass=isLive?' br-match-live':'';
+    const doneClass=isDone?' br-match-done':'';
+    const hTeam=h||null, aTeam=a||null;
+    return '<div class="br-match'+liveClass+doneClass+'">'
+      +teamRow(hTeam,isDone||isLive?hs:null,isDone&&h===winner,isLive)
+      +teamRow(aTeam,isDone||isLive?as_:null,isDone&&a===winner,isLive)
+      +'<div class="br-date">'+date+'</div></div>';
+  }
+
+  // Render R32 match (use API if available for score, else show teams)
+  function renderR32(entry){
+    const m=getApiMatch(entry.h,entry.a);
+    if(m&&(m.status==='FINISHED'||m.status==='IN_PLAY'||m.status==='PAUSED')){
+      return renderApiMatch(m);
+    }
+    // Not played yet - show teams
+    return '<div class="br-match">'
+      +teamRow(entry.h,null,false,false)
+      +teamRow(entry.a,null,false,false)
+      +'<div class="br-date">'+entry.d+'</div></div>';
+  }
+
+  function renderTbd(date){
     return '<div class="br-match br-tbd">'
       +'<div class="br-team"><span class="br-flag"></span><div class="br-info"><div class="br-name br-tbd-text">TBD</div></div></div>'
       +'<div class="br-team"><span class="br-flag"></span><div class="br-info"><div class="br-name br-tbd-text">TBD</div></div></div>'
-      +(d?'<div class="br-date">'+d+'</div>':'')
+      +(date?'<div class="br-date">'+date+'</div>':'')
       +'</div>';
   }
 
-  // L16/QF/SF dates
-  const l16dates=['4 Jul','4 Jul','5 Jul','5 Jul','6 Jul','6 Jul','7 Jul','7 Jul'];
-  const qfdates=['9 Jul','10 Jul','11 Jul','12 Jul'];
-  const sfdates=['14 Jul','15 Jul'];
+  // Render L16/QF/SF from API - use real teams if assigned, TBD if not
+  function renderKO(stage,idx){
+    const m=getStageMatch(stage,idx);
+    if(!m) return renderTbd('');
+    const h=norm((m.homeTeam&&(m.homeTeam.shortName||m.homeTeam.name))||'');
+    const a=norm((m.awayTeam&&(m.awayTeam.shortName||m.awayTeam.name))||'');
+    // Has real teams
+    if(h||a) return renderApiMatch(m);
+    // No teams yet - show date
+    const date=new Date(m.utcDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    return renderTbd(date);
+  }
 
-  // Build columns
-  function buildCol(title, cards, unitPx, totalPx){
+  // Build a column with absolute positioning for alignment
+  function buildCol(title,cards,unitPx,totalPx){
     let html='<div class="br-col">';
     html+='<div class="br-col-title">'+title+'</div>';
     html+='<div class="br-col-body" style="height:'+totalPx+'px;position:relative">';
     cards.forEach((card,i)=>{
-      const top = i*unitPx + unitPx/2 - 46; // 46 = approx half card height (team+owner+date)
-      html+='<div style="position:absolute;left:4px;right:4px;top:'+Math.max(0,top)+'px">'+card+'</div>';
+      const top=i*unitPx+unitPx/2-46;
+      html+='<div style="position:absolute;left:4px;right:4px;top:'+Math.max(2,top)+'px">'+card+'</div>';
     });
     html+='</div></div>';
     return html;
   }
 
-  const UNIT=98; // px per R32 slot — tall enough for team+owner+date
+  const UNIT=98;
   const total=8*UNIT;
 
-  const leftR32 = r32.slice(0,8).map(e=>matchCard(e.h,e.a,e.d,getApiMatch(e.h,e.a)));
-  const rightR32= r32.slice(8,16).map(e=>matchCard(e.h,e.a,e.d,getApiMatch(e.h,e.a)));
-  const leftL16 = [0,1,2,3].map(i=>tbdCard(l16dates[i]));
-  const rightL16= [0,1,2,3].map(i=>tbdCard(l16dates[i+4]));
-  const leftQF  = [0,1].map(i=>tbdCard(qfdates[i]));
-  const rightQF = [0,1].map(i=>tbdCard(qfdates[i+2]));
-  const leftSF  = [tbdCard(sfdates[0])];
-  const rightSF = [tbdCard(sfdates[1])];
+  // LEFT SIDE
+  const leftR32 =r32.slice(0,8).map(e=>renderR32(e));
+  const leftL16 =[0,1,2,3].map(i=>renderKO('LAST_16',i));
+  const leftQF  =[0,1].map(i=>renderKO('QUARTER_FINALS',i));
+  const leftSF  =[renderKO('SEMI_FINALS',0)];
 
-  // Final card
+  // RIGHT SIDE
+  const rightR32=r32.slice(8,16).map(e=>renderR32(e));
+  const rightL16=[4,5,6,7].map(i=>renderKO('LAST_16',i));
+  const rightQF =[2,3].map(i=>renderKO('QUARTER_FINALS',i));
+  const rightSF =[renderKO('SEMI_FINALS',1)];
+
+  // Final
   const finalM=apiMatches.find(m=>m.stage==='FINAL');
   const isDoneFinal=finalM&&finalM.status==='FINISHED';
-  let finalCard='<div class="br-final-card">';
-  finalCard+='<div class="br-final-title">&#127942; Final &middot; 19 Jul</div>';
-  if(isDoneFinal){
+  const isLiveFinal=finalM&&(finalM.status==='IN_PLAY'||finalM.status==='PAUSED');
+  let finalCard='<div class="br-final-card"><div class="br-final-title">&#127942; Final &middot; 19 Jul</div>';
+  if(finalM&&(isDoneFinal||isLiveFinal)){
     const h=norm((finalM.homeTeam&&(finalM.homeTeam.shortName||finalM.homeTeam.name))||'');
     const a=norm((finalM.awayTeam&&(finalM.awayTeam.shortName||finalM.awayTeam.name))||'');
     const hs=finalM.score.fullTime.home??0, as_=finalM.score.fullTime.away??0;
-    const champ=hs>as_?h:a;
-    finalCard+='<div class="br-champ-flag">'+(flags[champ]||'')+'</div>'
-      +'<div class="br-champ-name">'+champ+'</div>'
-      +'<div class="br-champ-owner">'+(owners[champ]||'')+'</div>';
+    const winner=hs>as_?h:a;
+    finalCard+=teamRow(h,isDoneFinal?hs:null,isDoneFinal&&h===winner,isLiveFinal);
+    finalCard+=teamRow(a,isDoneFinal?as_:null,isDoneFinal&&a===winner,isLiveFinal);
+    if(isDoneFinal){
+      finalCard+='<div class="br-champ-flag">'+(flags[winner]||'')+'</div>'
+        +'<div class="br-champ-name">'+winner+'</div>'
+        +'<div class="br-champ-owner">'+(owners[winner]||'')+'</div>';
+    }
   } else {
     finalCard+='<div class="br-team"><div class="br-info"><div class="br-name br-tbd-text">TBD</div></div></div>'
       +'<div class="br-team"><div class="br-info"><div class="br-name br-tbd-text">TBD</div></div></div>'
       +'<div style="text-align:center;padding:.8rem;font-size:2rem">&#127942;</div>'
-      +'<div style="text-align:center;font-size:.75rem;color:var(--muted)">To be decided</div>';
+      +'<div style="text-align:center;font-size:.75rem;color:var(--muted);padding-bottom:.5rem">To be decided</div>';
   }
   finalCard+='</div>';
 
   let html='<div class="bracket-wrap"><div class="bracket-outer">';
   html+='<div class="bracket-side">';
-  html+=buildCol('Last 32', leftR32, UNIT, total);
-  html+=buildCol('Last 16', leftL16, UNIT*2, total);
-  html+=buildCol('QF',      leftQF,  UNIT*4, total);
-  html+=buildCol('SF',      leftSF,  UNIT*8, total);
+  html+=buildCol('Last 32',leftR32, UNIT,   total);
+  html+=buildCol('Last 16',leftL16, UNIT*2, total);
+  html+=buildCol('QF',     leftQF,  UNIT*4, total);
+  html+=buildCol('SF',     leftSF,  UNIT*8, total);
   html+='</div>';
-  // Centre
-  html+='<div class="br-center" style="height:'+total+'px">'+finalCard+'</div>';
-  // Right
+  html+='<div class="br-center">'+finalCard+'</div>';
   html+='<div class="bracket-side">';
-  html+=buildCol('SF',      rightSF,  UNIT*8, total);
-  html+=buildCol('QF',      rightQF,  UNIT*4, total);
-  html+=buildCol('Last 16', rightL16, UNIT*2, total);
-  html+=buildCol('Last 32', rightR32, UNIT,   total);
+  html+=buildCol('SF',     rightSF,  UNIT*8, total);
+  html+=buildCol('QF',     rightQF,  UNIT*4, total);
+  html+=buildCol('Last 16',rightL16, UNIT*2, total);
+  html+=buildCol('Last 32',rightR32, UNIT,   total);
   html+='</div>';
   html+='</div></div>';
   container.innerHTML=html;
