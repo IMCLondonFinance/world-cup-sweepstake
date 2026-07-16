@@ -756,7 +756,7 @@ function getManual(){
       'pitchinvader':{mode:'split',team1:'Belgium',team2:'Senegal'},
       'mostred':['South Africa','Qatar'],
       'goldboot':['Argentina','France'],
-      'pensconceded':['Croatia','Jordan','Norway','Egypt'],
+      'pensconceded':['Croatia','Jordan','Norway','Egypt','France'],
       'owngoal':['Egypt','Qatar'],
       'mostpen':'England'
     };
@@ -833,10 +833,22 @@ function computeAutoResults(){
   }
 
   if(st.length>0){
-    // Most goals
-    const byGoals=[...st].sort((a,b)=>b.gf-a.gf||b.gd-a.gd);
-    const topGoals=byGoals[0];
-    results.mostGoals={team:topGoals.team,stat:`${topGoals.gf} goals scored`,tied:byGoals.filter(x=>x.gf===topGoals.gf).map(x=>x.team)};
+    // Most goals — calculated from ALL finished matches (not just group stage standings)
+    const allGoals={};
+    finished.forEach(m=>{
+      const h=norm(m.homeTeam?.shortName||m.homeTeam?.name||'');
+      const a=norm(m.awayTeam?.shortName||m.awayTeam?.name||'');
+      const hs=m.score?.fullTime?.home??0;
+      const as_=m.score?.fullTime?.away??0;
+      if(h){allGoals[h]=(allGoals[h]||0)+hs;}
+      if(a){allGoals[a]=(allGoals[a]||0)+as_;}
+    });
+    if(Object.keys(allGoals).length>0){
+      const sorted=Object.entries(allGoals).sort((a,b)=>b[1]-a[1]);
+      const topG=sorted[0][1];
+      const tiedG=sorted.filter(x=>x[1]===topG).map(x=>x[0]);
+      results.mostGoals={team:tiedG[0],stat:topG+' goals scored'+(tiedG.length>1?' ('+tiedG.length+' teams tied)':''),tied:tiedG};
+    }
 
     // Most draws (group stage only) — tiebreak: most losses. Only show leader if at least one draw has occurred.
     const byDraws=[...st].sort((a,b)=>b.draw-a.draw||b.lost-a.lost);
